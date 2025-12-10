@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+
+    <h2>{{ player.user.username }} – Player Profile</h2>
+
+    <hr>
+
+    <!-- BASIC INFO -->
+    <h4>Basic Info</h4>
+    <table class="table table-bordered" style="width: 400px;">
+        <tr>
+            <th>Name</th>
+            <td>{{ player.user.username }}</td>
+        </tr>
+        <tr>
+            <th>Age</th>
+            <td>{{ player.age if player.age else "N/A" }}</td>
+        </tr>
+        <tr>
+            <th>Batting Style</th>
+            <td>{{ player.batting_style or "N/A" }}</td>
+        </tr>
+        <tr>
+            <th>Bowling Style</th>
+            <td>{{ player.bowling_style or "N/A" }}</td>
+        </tr>
+        <tr>
+            <th>Role</th>
+            <td>{{ player.role_in_team or "N/A" }}</td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <!-- CAREER STATS -->
+    <h4>Total Career Stats</h4>
+
+    {% if stats %}
+    <table class="table table-striped" style="width: 500px;">
+        <tr><th>Matches</th><td>{{ stats.matches }}</td></tr>
+        <tr><th>Total Runs</th><td>{{ stats.total_runs }}</td></tr>
+        <tr><th>Balls Faced</th><td>{{ stats.total_balls }}</td></tr>
+        <tr><th>4s</th><td>{{ stats.total_fours }}</td></tr>
+        <tr><th>6s</th><td>{{ stats.total_sixes }}</td></tr>
+        <tr><th>Outs</th><td>{{ stats.outs }}</td></tr>
+        <tr><th>Wickets</th><td>{{ stats.wickets }}</td></tr>
+        <tr><th>Overs Bowled</th><td>{{ stats.overs_bowled }}</td></tr>
+        <tr><th>Runs Conceded</th><td>{{ stats.runs_conceded }}</td></tr>
+        <tr><th>Catches</th><td>{{ stats.catches }}</td></tr>
+        <tr><th>Drops</th><td>{{ stats.drops }}</td></tr>
+        <tr><th>Saves</th><td>{{ stats.saves }}</td></tr>
+    </table>
+    {% else %}
+    <p>No stats available yet.</p>
+    {% endif %}
+
+    <hr>
+
+    <!-- DOWNLOAD BUTTON -->
+    <a href="{{ url_for('player_stats_pdf', player_id=player.id) }}" 
+   class="btn btn-primary" target="_blank">
+    Download Stats PDF
+</a>
+
+
+</div>
+
+{% endblock %}

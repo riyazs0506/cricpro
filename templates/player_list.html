@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Players{% endblock %}
+{% block content %}
+
+<div class="container">
+    <h3>All Players</h3>
+
+    <div class="card p-3">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Player Name</th>
+                    <th>Role</th>
+                    <th>View Profile</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in players %}
+                <tr>
+                    <td>{{ p.user.username }}</td>
+                    <td>{{ p.role }}</td>
+                    <td>
+                        <a class="btn btn-primary"
+                           href="{{ url_for('view_player_profile', player_id=p.id) }}">
+                           View Profile
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

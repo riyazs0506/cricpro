@@ -1,27 +1,31 @@
-# app.py (FULL updated)
+# app.py (top imports, replace previous model imports)
 import io
 import os
 from datetime import datetime, timezone
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import (
     Flask, render_template, request, redirect,
-    url_for, flash, jsonify, current_app
+    url_for, flash, jsonify, current_app, send_file
 )
 from flask_login import (
     LoginManager, login_user, login_required,
     logout_user, current_user
 )
 
-# config (use the config.py you added)
+# config
 from config import DevelopmentConfig
 
-# models & utils & forms
+# models (package __init__ exposes db and model classes)
+# app.py (fixed imports)
 from models import (
-    db, User, Player, Coach, Batch, Match,
-    MatchAssignment, OpponentTempPlayer,
+    db, User, Coach, Player, Batch,
+    Match, MatchAssignment, OpponentTempPlayer,
     ManualScore, WagonWheel, LiveBall,
-    PlayerStats
+    PlayerStats, BattingStats, BowlingStats, FieldingStats
 )
+
+
+# utils and forms
 from utils import (
     calculate_age, assign_batch_by_age,
     merge_manual_into_player_stats, get_all_allowed_players
@@ -30,15 +34,16 @@ from forms import (
     RegisterForm, LoginForm, PlayerProfileForm,
     MatchCreateForm, ManualMatchForm
 )
-from flask import send_file
+
+# PDF helpers
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 
-from flask import request, jsonify
-from models import db, ManualScore, Match, Player
+# SQLAlchemy helpers
 from sqlalchemy import and_
+
 
 # --------------------------------------------------------
 # APP CONFIG
@@ -207,6 +212,81 @@ def dashboard_coach():
         matches_today=matches_today,
         matches_pending=matches_pending
     )
+
+# Public player profile + stats (viewable by any logged-in user)
+@app.route("/player/<int:player_id>/view")
+@login_required
+def player_public_profile(player_id):
+    """
+    Public player profile page — visible to any logged-in user (coach or player).
+    Shows the player's basic info, user.username, and aggregated stats (PlayerStats).
+    """
+    player = Player.query.get_or_404(player_id)
+
+    # fetch stats (may be None if no stats yet)
+    stats = PlayerStats.query.filter_by(player_id=player.id).first()
+
+    # optionally show recent manual scoring rows for context
+    recent_manual = ManualScore.query.filter_by(player_id=player.id).order_by(ManualScore.id.desc()).limit(20).all()
+
+    # allow editing only for the player themselves or coaches (edit link handled in template)
+    can_edit = False
+    if current_user.role == "coach":
+        can_edit = True
+    elif current_user.role == "player":
+        # allow edit only if viewing your own profile
+        p_self = Player.query.filter_by(user_id=current_user.id).first()
+        if p_self and p_self.id == player.id:
+            can_edit = True
+
+    return render_template(
+        "player_public_profile.html",
+        player=player,
+        stats=stats,
+        recent_manual=recent_manual,
+        can_edit=can_edit
+    )
+
+@app.route("/players")
+@login_required
+def list_players():
+    players = Player.query.all()
+    return render_template("player_list.html", players=players)
+
+
+@app.route("/player/<int:player_id>/profile_view")
+@login_required
+def view_player_profile(player_id):
+    # Get player
+    player = Player.query.get_or_404(player_id)
+
+    # Season / career stats (merged)
+    career = PlayerStats.query.filter_by(player_id=player_id).first()
+
+    # Match-by-match stats (from ManualScore table)
+    batting_rows = ManualScore.query.filter_by(player_id=player_id).filter(
+        ManualScore.balls_faced != 0
+    ).all()
+
+    bowling_rows = ManualScore.query.filter_by(player_id=player_id).filter(
+        ManualScore.overs != 0
+    ).all()
+
+    fielding_rows = ManualScore.query.filter_by(player_id=player_id).filter(
+        (ManualScore.catches != 0) |
+        (ManualScore.drops != 0) |
+        (ManualScore.saves != 0)
+    ).all()
+
+    return render_template(
+        "player_profile_view.html",
+        player=player,
+        career=career,
+        batting_rows=batting_rows,
+        bowling_rows=bowling_rows,
+        fielding_rows=fielding_rows
+    )
+
 
 
 
@@ -866,189 +946,233 @@ def coach_approve_match(match_id):
     return redirect(url_for("dashboard_coach"))
 
 
+def generate_coach_suggestions(full_batting, full_bowling, top_fielding):
+    suggestions = []
 
-@app.route("/match/<int:match_id>/report")
+    # --- Batting Suggestions ---
+    for b in full_batting:
+        sr = (b["runs"] / b["balls"] * 100) if b["balls"] else 0
+
+        s = []
+        if b["runs"] >= 50:
+            s.append("Excellent batting performance — continue building long innings.")
+        elif b["runs"] >= 30:
+            s.append("Good start — work on converting 30s into big scores.")
+        else:
+            s.append("Need stronger shot selection and rotation of strike.")
+
+        if sr < 60:
+            s.append("Low strike rate — improve running between wickets and placement.")
+        elif sr > 120:
+            s.append("Great aggressive intent — maintain controlled aggression.")
+
+        suggestions.append({
+            "player_name": b["player_name"],
+            "suggestions": s
+        })
+
+    # --- Bowling Suggestions ---
+    for bw in full_bowling:
+        econ = (bw["runs_conceded"] / bw["overs"]) if bw["overs"] else 0
+        s = []
+
+        if bw["wickets"] >= 3:
+            s.append("Strong wicket-taking performance — maintain consistency with variations.")
+        elif bw["wickets"] == 0:
+            s.append("Focus on bowling tighter lines to create wicket opportunities.")
+
+        if econ > 7.5:
+            s.append("Economy rate high — practice yorkers and slower balls.")
+        else:
+            s.append("Good economical spell — maintain discipline.")
+
+        suggestions.append({
+            "player_name": bw["player_name"],
+            "suggestions": s
+        })
+
+    # --- Fielding Suggestions ---
+    for f in top_fielding:
+        s = []
+        if f["catches"] >= 2:
+            s.append("Good catching performance — work on reaction drills for run-outs.")
+        else:
+            s.append("Improve anticipation and ready position while fielding.")
+
+        suggestions.append({
+            "player_name": f["player_name"],
+            "suggestions": s
+        })
+
+    return suggestions
+
+@app.route("/match/<int:match_id>/report_view")
 @login_required
-def match_report_pdf(match_id):
-    """
-    Generate a professional-style PDF match report (in-memory) and return as attachment.
-    Uses simple heuristics to produce coach suggestions.
-    """
-    from sqlalchemy import func
+def match_report_view(match_id):
 
     m = Match.query.get_or_404(match_id)
 
-    # fetch manual scoring rows (exclude opponent summary rows for player-level stats)
-    manual_rows = ManualScore.query.filter_by(match_id=match_id, is_opponent=False).all()
+    # ---------------- OUR TEAM ROWS ----------------
+    our_rows = ManualScore.query.filter_by(match_id=match_id, is_opponent=False).all()
 
-    # Build per-player aggregates from manual_rows
-    per = {}
-    for r in manual_rows:
-        pid = r.player_id
-        if not pid:
-            continue
-        if pid not in per:
-            per[pid] = {
-                "player": r.player,
-                "runs": 0,
-                "balls": 0,
-                "outs": 0,
-                "fours": 0,
-                "sixes": 0,
-                "wickets": 0,
-                "overs": 0.0,
-                "runs_conceded": 0,
-                "catches": 0
-            }
-        rec = per[pid]
-        rec["runs"] += (r.runs or 0)
-        rec["balls"] += (r.balls_faced or 0)
+    # ---------------- BATTING ----------------
+    full_batting = []
+    total = 0
+    fow = []
+    w_no = 1
+
+    for r in our_rows:
+        total += (r.runs or 0)
+
+        if r.balls_faced > 0:
+            full_batting.append({
+                "player_name": r.player.user.username,
+                "runs": r.runs,
+                "balls": r.balls_faced,
+                "fours": r.fours,
+                "sixes": r.sixes,
+                "dismissal_type": r.dismissal_type if r.is_out else "Not Out"
+            })
+
         if r.is_out:
-            rec["outs"] += 1
-        rec["fours"] += (r.fours or 0)
-        rec["sixes"] += (r.sixes or 0)
-        rec["wickets"] += (r.wickets or 0)
-        rec["overs"] += float(r.overs or 0.0)
-        rec["runs_conceded"] += (r.runs_conceded or 0)
-        rec["catches"] += (r.catches or 0)
+            fow.append({
+                "number": w_no,
+                "score": total,
+                "over": r.wicket_over or "-",
+                "player_name": r.player.user.username
+            })
+            w_no += 1
 
-    # Top performers (simple picks)
-    def top_batting():
-        best = None
-        for pid, rec in per.items():
-            if best is None or rec["runs"] > per[best]["runs"]:
-                best = pid
-        return per[best] if best else None
+    # ---------------- BOWLING ----------------
+    full_bowling = []
+    for r in our_rows:
+        if r.overs and float(r.overs) > 0:
+            full_bowling.append({
+                "player_name": r.player.user.username,
+                "overs": float(r.overs),
+                "runs_conceded": r.runs_conceded,
+                "wickets": r.wickets,
+            })
 
-    def top_bowler():
-        best = None
-        for pid, rec in per.items():
-            if best is None or rec["wickets"] > per[best]["wickets"]:
-                best = pid
-        return per[best] if best else None
+    # ---------------- FIELDING ----------------
+    top_fielding = []
+    for r in our_rows:
+        if r.catches > 0:
+            top_fielding.append({
+                "player_name": r.player.user.username,
+                "catches": r.catches
+            })
 
-    def top_fielder():
-        best = None
-        for pid, rec in per.items():
-            if best is None or rec["catches"] > per[best]["catches"]:
-                best = pid
-        return per[best] if best else None
+    # ---------------- WAGON WHEEL ----------------
+    wagon_list = []
+    for w in WagonWheel.query.filter_by(match_id=match_id).all():
+        pname = Player.query.get(w.player_id).user.username
+        wagon_list.append({
+            "player_name": pname,
+            "shots": [{
+                "angle": w.angle,
+                "runs": w.runs,
+                "shot_type": w.shot_type
+            }]
+        })
 
-    batter = top_batting()
-    bowler = top_bowler()
-    fielder = top_fielder()
+    # ---------------- RESULT ----------------
+    result = None
+    if m.team_runs is not None and m.opp_runs is not None:
+        if m.team_runs > m.opp_runs:
+            result = f"{m.team_name} won by {m.team_runs - m.opp_runs} runs"
+        elif m.opp_runs > m.team_runs:
+            result = f"{m.opponent_name} won by {m.opp_runs - m.team_runs} runs"
+        else:
+            result = "Match Tied"
 
-    # match-level quick numbers (use match columns if present, otherwise compute)
-    team_runs = getattr(m, "team_runs", None)
-    if team_runs is None:
-        # compute from manual rows marked is_opponent==False batting rows
-        team_rows = ManualScore.query.filter_by(match_id=match_id, is_opponent=False).all()
-        team_runs = sum([r.runs or 0 for r in team_rows])
+    # ---------------- AI COACH SUGGESTIONS ----------------
+    suggestions = generate_coach_suggestions(full_batting, full_bowling, top_fielding)
 
-    opp = getattr(m, "opp_runs", None)
-    if opp is None:
-        opp_simple = ManualScore.query.filter_by(match_id=match_id, is_opponent=True).first()
-        opp = opp_simple.runs if opp_simple else 0
+    # ---------------- FINAL DATA ----------------
+    data = {
+        "match": m,
+        "result": result,
 
-    # Build a BytesIO PDF
+        "our": {
+            "runs": m.team_runs or 0,
+            "wickets": m.team_wkts or 0,
+            "overs": float(m.team_overs or 0)
+        },
+
+        "opponent": {
+            "runs": m.opp_runs or 0,
+            "wickets": m.opp_wkts or 0,
+            "overs": float(m.opp_overs or 0)
+        },
+
+        "full_batting": full_batting,
+        "full_bowling": full_bowling,
+        "fow": fow,
+
+        "top_batting": sorted(full_batting, key=lambda x: x["runs"], reverse=True)[:3],
+        "top_bowling": sorted(full_bowling, key=lambda x: x["wickets"], reverse=True)[:3],
+        "top_fielding": top_fielding,
+
+        "wagon_list": wagon_list,
+        "suggestions": suggestions,
+
+        "generated_at": datetime.utcnow()
+    }
+
+    return render_template("match_report.html", data=data)
+
+
+@app.route("/match/<int:match_id>/report_pdf")
+@login_required
+def match_report_pdf(match_id):
+
+    # USE THE SAME DATA AS VIEW
+    response = match_report_view(match_id)
+    html_data = response.context["data"]  # Flask provides context here
+
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=36, rightMargin=36, topMargin=36, bottomMargin=36)
+    doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=30, rightMargin=30)
     styles = getSampleStyleSheet()
     story = []
 
-    # Header
-    story.append(Paragraph(f"{m.title}", styles["Title"]))
-    story.append(Paragraph(f"{m.team_name} vs {m.opponent_name} — {m.match_date}", styles["Normal"]))
-    story.append(Spacer(1, 8))
+    m = html_data["match"]
 
-    # Overview table (professional-ish)
-    overview_data = [
-        ["Team", "Runs", "Wkts", "Overs"],
-        [m.team_name, str(getattr(m, "team_runs", team_runs) or 0), str(getattr(m, "team_wkts", 0) or 0), str(getattr(m, "team_overs", "0.0") or "0.0")],
-        [m.opponent_name, str(getattr(m, "opp_runs", opp) or 0), str(getattr(m, "opp_wkts", 0) or 0), str(getattr(m, "opp_overs", "0.0") or "0.0")]
+    # TITLE
+    story.append(Paragraph(f"Match Report — {m.title}", styles["Title"]))
+    story.append(Paragraph(f"{m.team_name} vs {m.opponent_name}", styles["Normal"]))
+    story.append(Spacer(1, 12))
+
+    # SCORE SUMMARY
+    summary = [
+        ["Team", "Runs", "Wickets", "Overs"],
+        [m.team_name, html_data["our"]["runs"], html_data["our"]["wickets"], html_data["our"]["overs"]],
+        [m.opponent_name, html_data["opponent"]["runs"], html_data["opponent"]["wickets"], html_data["opponent"]["overs"]],
     ]
-    t = Table(overview_data, hAlign="LEFT", colWidths=[200, 60, 60, 60])
+
+    t = Table(summary)
     t.setStyle(TableStyle([
-        ("BACKGROUND", (0,0), (-1,0), colors.HexColor("#0d6efd")),
-        ("TEXTCOLOR", (0,0), (-1,0), colors.white),
-        ("ALIGN",(1,1),(-1,-1),"CENTER"),
+        ("BACKGROUND", (0,0), (-1,0), colors.lightblue),
         ("GRID", (0,0), (-1,-1), 0.5, colors.grey),
-        ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
     ]))
     story.append(t)
     story.append(Spacer(1, 12))
 
-    # Top performers table
-    perf_rows = [["Category","Player","Detail"]]
-    if batter:
-        sr = (batter["runs"] / batter["balls"] * 100) if batter["balls"]>0 else 0
-        perf_rows.append(["Batting", batter["player"].user.username, f"{batter['runs']} ({batter['balls']}b) SR: {sr:.2f}"])
-    else:
-        perf_rows.append(["Batting", "-", "-"])
+    # TOP PERFORMERS
+    story.append(Paragraph("Top Performers", styles["Heading2"]))
 
-    if bowler:
-        perf_rows.append(["Bowling", bowler["player"].user.username, f"{bowler['wickets']} wickets, {bowler['overs']:.1f} overs"])
-    else:
-        perf_rows.append(["Bowling", "-", "-"])
+    for s in html_data["suggestions"]:
+        story.append(Paragraph(f"<b>{s['player_name']}</b>", styles["Normal"]))
+        for sug in s["suggestions"]:
+            story.append(Paragraph(f"• {sug}", styles["Normal"]))
+        story.append(Spacer(1, 6))
 
-    if fielder:
-        perf_rows.append(["Fielding", fielder["player"].user.username, f"{fielder['catches']} catches"])
-    else:
-        perf_rows.append(["Fielding", "-", "-"])
-
-    pt = Table(perf_rows, colWidths=[100, 180, 160])
-    pt.setStyle(TableStyle([
-        ("BACKGROUND", (0,0), (-1,0), colors.lightgrey),
-        ("GRID", (0,0), (-1,-1), 0.4, colors.grey),
-    ]))
-    story.append(Paragraph("Top Performers", styles["Heading3"]))
-    story.append(pt)
-    story.append(Spacer(1, 12))
-
-    # Suggestions (simple AI heuristics — coach-level suggestions)
-    suggestions = []
-    # Example rules:
-    if batter:
-        sr = (batter["runs"] / batter["balls"] * 100) if batter["balls"]>0 else 0
-        if sr < 70:
-            suggestions.append(f"{batter['player'].user.username}: Strike rotation improvement — practice strike-rotation drills and running between wickets to increase SR.")
-        else:
-            suggestions.append(f"{batter['player'].user.username}: Good power & scoring rate — focus on placement in middle overs.")
-    else:
-        suggestions.append("No significant batting contributions found to analyse.")
-
-    if bowler:
-        econ = (bowler["runs_conceded"] / bowler["overs"]) if bowler["overs"]>0 else 0
-        if bowler["wickets"] >= 3:
-            suggestions.append(f"{bowler['player'].user.username}: Excellent wicket taking — work on variations to increase consistency.")
-        elif econ and econ > 7.5:
-            suggestions.append(f"{bowler['player'].user.username}: High economy ({econ:.2f}) — focus on line/length & slower ball control.")
-    else:
-        suggestions.append("No notable bowling performance found.")
-
-    if fielder:
-        if fielder["catches"] >= 2:
-            suggestions.append(f"{fielder['player'].user.username}: Strong fielding — practice direct-hit accuracy for run-outs.")
-        else:
-            suggestions.append("Fielding: Encourage improved ground-fielding drills (reaction & diving).")
-
-    story.append(Paragraph("Coach Suggestions (automated)", styles["Heading3"]))
-    for s in suggestions:
-        story.append(Paragraph("• " + s, styles["Normal"]))
-        story.append(Spacer(1,6))
-
-    # Build PDF
     doc.build(story)
 
     buffer.seek(0)
-    filename = f"match_report_{match_id}.pdf"
+    return send_file(buffer, download_name=f"match_{match_id}_report.pdf", as_attachment=True)
 
-    return send_file(
-        buffer,
-        as_attachment=True,
-        download_name=filename,
-        mimetype="application/pdf"
-    )
+
 
 @app.route("/coach/match/<int:match_id>/result", methods=["POST"])
 @login_required
@@ -1139,6 +1263,78 @@ def coach_review_match(match_id):
         fielding=fielding,
         suggestions=suggestions
     )
+# --------------------------------------------------------
+# PLAYER STATS PDF DOWNLOAD
+# --------------------------------------------------------
+@app.route("/player/<int:player_id>/stats/pdf")
+@login_required
+def player_stats_pdf(player_id):
+
+    player = Player.query.get_or_404(player_id)
+    stats = PlayerStats.query.filter_by(player_id=player_id).first()
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    styles = getSampleStyleSheet()
+    story = []
+
+    story.append(Paragraph(f"Player Stats Report - {player.user.username}", styles["Title"]))
+    story.append(Spacer(1, 12))
+
+    # Basic info table
+    data = [
+        ["Field", "Value"],
+        ["Name", player.user.username],
+        ["Age", player.age or "-"],
+        ["Batting Style", player.batting_style or "-"],
+        ["Bowling Style", player.bowling_style or "-"],
+        ["Role", player.role_in_team or "-"],
+    ]
+
+    t = Table(data)
+    t.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,0), colors.lightgrey),
+        ("GRID", (0,0), (-1,-1), 0.5, colors.grey),
+        ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
+    ]))
+    story.append(t)
+    story.append(Spacer(1, 20))
+
+    # Career Stats
+    if stats:
+        story.append(Paragraph("Career Stats", styles["Heading2"]))
+        data2 = [
+            ["Matches", stats.matches],
+            ["Runs", stats.total_runs],
+            ["Balls", stats.total_balls],
+            ["Fours", stats.total_fours],
+            ["Sixes", stats.total_sixes],
+            ["Wickets", stats.wickets],
+            ["Overs Bowled", stats.overs_bowled],
+            ["Runs Conceded", stats.runs_conceded],
+            ["Catches", stats.catches],
+        ]
+
+        t2 = Table(data2)
+        t2.setStyle(TableStyle([
+            ("GRID", (0,0), (-1,-1), 0.5, colors.grey),
+        ]))
+
+        story.append(t2)
+    else:
+        story.append(Paragraph("No stats available yet.", styles["Normal"]))
+
+    doc.build(story)
+    buffer.seek(0)
+
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name=f"{player.user.username}_stats.pdf",
+        mimetype="application/pdf"
+    )
+
+
 
 
 # --------------------------------------------------------

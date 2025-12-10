@@ -79,10 +79,16 @@
             View Live Scoreboard
         </a>
 
-        <a href="{{ url_for('match_report_pdf', match_id=match.id) }}" 
-             class="btn btn-danger mt-2">
-             📄 Download Match Report (PDF)
-        </a>
+        <a class="btn btn-primary" href="{{ url_for('match_report_view', match_id=match.id) }}">
+    View Report
+</a>
+
+<a class="btn btn-success" href="{{ url_for('match_report_pdf', match_id=match.id) }}">
+    Download PDF
+</a>
+
+
+
 
 
     </div>

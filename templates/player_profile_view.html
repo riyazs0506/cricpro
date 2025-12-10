@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h2>Player Profile: {{ player.user.username }}</h2>
+    <hr>
+
+    <!-- Basic Player Info -->
+    <h4>Basic Info</h4>
+    <table class="table table-bordered">
+        <tr><th>Name</th><td>{{ player.user.username }}</td></tr>
+        <tr><th>Age</th><td>{{ player.age }}</td></tr>
+        <tr><th>Batting Style</th><td>{{ player.batting_style }}</td></tr>
+        <tr><th>Bowling Style</th><td>{{ player.bowling_style }}</td></tr>
+        <tr><th>Role</th><td>{{ player.role_in_team }}</td></tr>
+        <tr><th>Bio</th><td>{{ player.bio }}</td></tr>
+    </table>
+
+    <hr>
+
+    <!-- Career Stats -->
+    <h4>Career Stats</h4>
+
+    {% if career %}
+    <table class="table table-striped">
+        <tr><th>Matches</th><td>{{ career.matches }}</td></tr>
+        <tr><th>Total Runs</th><td>{{ career.total_runs }}</td></tr>
+        <tr><th>Total Balls</th><td>{{ career.total_balls }}</td></tr>
+        <tr><th>Fours</th><td>{{ career.total_fours }}</td></tr>
+        <tr><th>Sixes</th><td>{{ career.total_sixes }}</td></tr>
+        <tr><th>Wickets</th><td>{{ career.wickets }}</td></tr>
+        <tr><th>Catches</th><td>{{ career.catches }}</td></tr>
+        <tr><th>Drops</th><td>{{ career.drops }}</td></tr>
+    </table>
+    {% else %}
+        <p>No stats available.</p>
+    {% endif %}
+
+    <hr>
+
+    <!-- Match-by-Match Batting -->
+    <h4>Batting (Match by Match)</h4>
+    {% if batting_rows %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Runs</th>
+                <th>Balls</th>
+                <th>Fours</th>
+                <th>Sixes</th>
+                <th>Out?</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in batting_rows %}
+            <tr>
+                <td>{{ r.runs }}</td>
+                <td>{{ r.balls_faced }}</td>
+                <td>{{ r.fours }}</td>
+                <td>{{ r.sixes }}</td>
+                <td>{{ "Yes" if r.is_out else "No" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>No batting records found.</p>
+    {% endif %}
+
+    <hr>
+
+    <h4>Bowling (Match by Match)</h4>
+    {% if bowling_rows %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Overs</th>
+                <th>Runs Conceded</th>
+                <th>Wickets</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in bowling_rows %}
+            <tr>
+                <td>{{ r.overs }}</td>
+                <td>{{ r.runs_conceded }}</td>
+                <td>{{ r.wickets }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>No bowling records found.</p>
+    {% endif %}
+
+    <hr>
+
+    <h4>Fielding (Match by Match)</h4>
+    {% if fielding_rows %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Catches</th>
+                <th>Drops</th>
+                <th>Saves</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in fielding_rows %}
+            <tr>
+                <td>{{ r.catches }}</td>
+                <td>{{ r.drops }}</td>
+                <td>{{ r.saves }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>No fielding stats available.</p>
+    {% endif %}
+    <div>
+        <a href="{{ url_for('player_stats_pdf', player_id=player.id) }}"
+   class="btn btn-primary mt-3">
+    Download Stats PDF
+</a>
+    </div>
+
+
+</div>
+{% endblock %}

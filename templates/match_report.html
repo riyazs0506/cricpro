@@ -3,148 +3,318 @@
 <html>
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Match Report — {{ data.match.title }}</title>
   <style>
-    /* Professional modern look */
-    body { font-family: "Helvetica Neue", Arial, sans-serif; color:#222; font-size:12px; }
-    .header { background: linear-gradient(90deg,#0d6efd,#0b5ed7); color: #fff; padding:18px 22px; }
-    .header h1 { margin:0; font-size:20px; font-weight:700; }
-    .meta { margin-top:8px; font-size:12px; opacity:0.95; }
-    .container { padding:18px; }
-    .section { margin-bottom:18px; }
-    h2.section-title { font-size:14px; color:#0b5ed7; margin:0 0 8px 0; font-weight:700; }
-    table { width:100%; border-collapse: collapse; background: #f7f7f7; }
-    table th, table td { padding:8px 10px; border:1px solid #e2e2e2; text-align:left; }
-    table th { background:#efefef; font-weight:700; color:#111; }
-    .three-cols { display:flex; gap:12px; }
-    .col { flex:1; }
-    .muted { color:#666; font-size:11px; }
-    .score-big { font-size:20px; font-weight:700; color:#111; }
-    .highlight { background:#e9f2ff; padding:8px; border-radius:4px; }
-    .suggestions { margin-top:10px; }
-    .small { font-size:11px; color:#444; }
-    footer { margin-top:20px; font-size:10px; color:#666; text-align:right; }
+    :root{
+      --blue:#0d6efd;
+      --muted:#6c757d;
+      --card:#ffffff;
+      --bg:#f6f8fb;
+      --border:#e6e9ef;
+      --accent:#0b5ed7;
+      --radius:10px;
+      --pad:14px;
+      --shadow: 0 6px 22px rgba(10,30,60,0.06);
+      font-family: Inter, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    html,body{height:100%;margin:0;background:var(--bg);color:#1f2937}
+    .page { max-width:1100px; margin:28px auto; padding:18px; }
+
+    .top {
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:18px;
+    }
+
+    .brand {
+      display:flex;gap:12px;align-items:center;
+    }
+    .logo {
+      width:56px;height:56px;border-radius:12px;
+      background:linear-gradient(135deg,var(--blue),var(--accent));
+      display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;
+      box-shadow:var(--shadow);
+      font-size:18px;
+    }
+    .title {
+      display:flex;flex-direction:column;
+    }
+    .title h1{margin:0;font-size:18px;}
+    .title small{color:var(--muted);font-size:12px;}
+
+    .actions { display:flex; gap:8px; align-items:center; }
+    .btn {
+      padding:8px 12px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:600;
+      border:1px solid transparent;font-size:13px;
+    }
+    .btn-primary{background:var(--blue);color:#fff;}
+    .btn-outline{background:#fff;color:var(--blue);border-color:var(--blue);}
+
+    /* layout */
+    .grid { display:grid; grid-template-columns: 1fr 380px; gap:18px; align-items:start; }
+    .card { background:var(--card); border-radius:var(--radius); padding:var(--pad); box-shadow:var(--shadow); border:1px solid var(--border); }
+    .muted{color:var(--muted);font-size:13px}
+    h2.section-title{margin:0 0 10px 0;color:var(--accent);font-size:14px}
+
+    .scorebox { display:flex; gap:12px; align-items:center; }
+    .score-main { background:linear-gradient(90deg,#eef6ff,#ffffff); border-radius:8px; padding:12px 16px; display:flex; flex-direction:column; align-items:flex-start; }
+    .score-big { font-size:20px; font-weight:800; color:#0b2540; }
+    .score-sub { color:var(--muted); font-size:13px; margin-top:6px; }
+
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    table th, table td { padding:8px 10px; border-bottom:1px dashed var(--border); text-align:left; vertical-align:middle; }
+    table thead th { background:transparent; font-weight:700; color:#111; border-bottom:2px solid var(--border); }
+    .compact td{ padding:6px 8px; font-size:13px; }
+
+    .three { display:flex; gap:12px; }
+    .three .col { flex:1; }
+
+    .suggestion-card { display:flex; flex-direction:column; gap:10px; }
+    .sug-item { padding:10px; border-radius:8px; background:#fbfdff; border:1px solid #e8f0ff; }
+    .sug-title { font-weight:700; font-size:13px; margin-bottom:6px; color:#08306a }
+
+    footer { text-align:right; color:var(--muted); font-size:12px; margin-top:14px; }
+
+    /* responsive */
+    @media (max-width:980px){
+      .grid{grid-template-columns:1fr; }
+      .actions{flex-wrap:wrap}
+      .title h1{font-size:16px}
+    }
   </style>
 </head>
 <body>
+  <div class="page">
+    <div class="top">
+      <div class="brand">
+        <div class="logo">CR</div>
+        <div class="title">
+          <h1>Match Report — {{ data.match.title }}</h1>
+          <small class="muted">{{ data.match.match_date }} • {{ data.match.venue or "-" }} • {{ data.match.format or "-" }}</small>
+        </div>
+      </div>
 
-  <div class="header">
-    <h1>Match Report — {{ data.match.title }}</h1>
-    <div class="meta">
-      {{ data.match.match_date }} • Venue: {{ data.match.venue or "-" }} • Type: {{ data.match.format or "-" }}
-    </div>
-  </div>
-
-  <div class="container">
-
-    <!-- Overview -->
-    <div class="section">
-      <h2 class="section-title">Match Overview</h2>
-      <table>
-        <tr><th>Team</th><th>Score (R/W)</th><th>Overs</th></tr>
-        <tr>
-          <td><strong>{{ data.match.team_name or "Our Team" }}</strong></td>
-          <td class="score-big">{{ data.our.runs or 0 }} / {{ data.our.wickets or 0 }}</td>
-          <td>{{ "%.1f" % (data.our.overs or 0) }}</td>
-        </tr>
-        <tr>
-          <td><strong>{{ data.match.opponent_name or "Opponent" }}</strong></td>
-          <td class="score-big">{{ data.opponent.runs or 0 }} / {{ data.opponent.wickets or 0 }}</td>
-          <td>-</td>
-        </tr>
-      </table>
+      <div class="actions">
+        <!-- Download PDF (calls your backend route match_report_pdf) -->
+        <a class="btn btn-primary" href="{{ url_for('match_report_pdf', match_id=data.match.id) }}">Download PDF</a>
+        <!-- Quick print -->
+        <a class="btn btn-outline" href="#" onclick="window.print();return false;">Print</a>
+      </div>
     </div>
 
-    <!-- Top performers -->
-    <div class="section">
-      <h2 class="section-title">Top Performances</h2>
-      <div class="three-cols">
-        <div class="col">
-          <h3 class="small">Batting</h3>
-          <table>
-            <tr><th>Player</th><th>Runs</th><th>Balls</th></tr>
-            {% for b in data.top_batting %}
-            <tr>
-              <td>{{ b.player.user.username if b.player else "—" }}</td>
-              <td>{{ b.runs or 0 }}</td>
-              <td>{{ b.balls or 0 }}</td>
-            </tr>
-            {% endfor %}
-            {% if not data.top_batting %}<tr><td colspan="3" class="muted">No batting entries</td></tr>{% endif %}
-          </table>
+    <div class="grid">
+      <!-- LEFT: Main content -->
+      <div>
+        <!-- RESULT + SUMMARY -->
+        <div class="card" style="margin-bottom:12px;">
+          <h2 class="section-title">Match Result & Summary</h2>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;align-items:center;">
+            <div class="scorebox">
+              <div class="score-main">
+                <div style="display:flex;gap:18px;align-items:center;">
+                  <div>
+                    <div style="font-size:12px;color:var(--muted)">Our Team</div>
+                    <div class="score-big">{{ data.our.runs }} / {{ data.our.wickets }}</div>
+                    <div class="score-sub">{{ "%.1f"|format(data.our.overs or 0) }} overs</div>
+                  </div>
+
+                  <div style="width:1px;background:var(--border);height:48px;"></div>
+
+                  <div>
+                    <div style="font-size:12px;color:var(--muted)">{{ data.match.opponent_name }}</div>
+                    <div class="score-big">{{ data.opponent.runs }} / {{ data.opponent.wickets }}</div>
+                    <div class="score-sub">{{ "%.1f"|format(data.opponent.overs or 0) }} overs</div>
+                  </div>
+                </div>
+                <div style="margin-top:10px;">
+                  {% if data.result %}
+                    <strong>{{ data.result }}</strong>
+                  {% else %}
+                    <span class="muted">Result not provided</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="col">
-          <h3 class="small">Bowling</h3>
-          <table>
-            <tr><th>Player</th><th>Wkts</th><th>Overs</th></tr>
-            {% for bw in data.top_bowling %}
-            <tr>
-              <td>{{ bw.player.user.username if bw.player else "—" }}</td>
-              <td>{{ bw.wickets or 0 }}</td>
-              <td>{{ "%.1f"|format(bw.overs or 0) }}</td>
-            </tr>
-            {% endfor %}
-            {% if not data.top_bowling %}<tr><td colspan="3" class="muted">No bowling entries</td></tr>{% endif %}
-          </table>
+        <!-- Full Batting Scorecard -->
+        <div class="card" style="margin-bottom:12px;">
+          <h2 class="section-title">Full Batting Scorecard</h2>
+          <div style="margin-top:10px; overflow:auto;">
+            <table class="compact">
+              <thead>
+                <tr>
+                  <th>Batsman</th>
+                  <th style="width:70px">R</th>
+                  <th style="width:70px">B</th>
+                  <th style="width:70px">4s</th>
+                  <th style="width:70px">6s</th>
+                  <th style="width:140px">Dismissal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in data.full_batting %}
+                <tr>
+                  <td>{{ r.player_name }}</td>
+                  <td>{{ r.runs }}</td>
+                  <td>{{ r.balls }}</td>
+                  <td>{{ r.fours }}</td>
+                  <td>{{ r.sixes }}</td>
+                  <td>{{ r.dismissal_type }}</td>
+                </tr>
+                {% endfor %}
+                {% if not data.full_batting %}
+                <tr><td colspan="6" class="muted">No batting data recorded.</td></tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div class="col">
-          <h3 class="small">Fielding</h3>
-          <table>
-            <tr><th>Player</th><th>Catches</th></tr>
-            {% for f in data.top_fielding %}
-            <tr>
-              <td>{{ f.player.user.username if f.player else "—" }}</td>
-              <td>{{ f.catches or 0 }}</td>
-            </tr>
-            {% endfor %}
-            {% if not data.top_fielding %}<tr><td colspan="2" class="muted">No fielding entries</td></tr>{% endif %}
-          </table>
+        <!-- Full Bowling Scorecard -->
+        <div class="card" style="margin-bottom:12px;">
+          <h2 class="section-title">Full Bowling Scorecard</h2>
+          <div style="margin-top:10px;">
+            <table class="compact">
+              <thead>
+                <tr><th>Bowler</th><th style="width:90px">Overs</th><th style="width:90px">Runs</th><th style="width:90px">Wickets</th></tr>
+              </thead>
+              <tbody>
+                {% for b in data.full_bowling %}
+                <tr>
+                  <td>{{ b.player_name }}</td>
+                  <td>{{ "%.1f"|format(b.overs or 0) }}</td>
+                  <td>{{ b.runs_conceded }}</td>
+                  <td>{{ b.wickets }}</td>
+                </tr>
+                {% endfor %}
+                {% if not data.full_bowling %}
+                <tr><td colspan="4" class="muted">No bowling data recorded.</td></tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Fall of wickets -->
+        <div class="card" style="margin-bottom:12px;">
+          <h2 class="section-title">Fall of Wickets</h2>
+          <div style="margin-top:10px;">
+            {% if data.fow %}
+            <table class="compact">
+              <thead><tr><th>#</th><th>Score</th><th>Over</th><th>Batsman</th></tr></thead>
+              <tbody>
+              {% for f in data.fow %}
+                <tr>
+                  <td>{{ f.number }}</td>
+                  <td>{{ f.score }}</td>
+                  <td>{{ f.over }}</td>
+                  <td>{{ f.player_name }}</td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+            {% else %}
+              <div class="muted">No fall-of-wicket data recorded.</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: sidebar (suggestions, top performers, wagon) -->
+      <div>
+        <!-- Coach Suggestions (AI) -->
+        <div class="card" style="margin-bottom:12px;">
+          <h2 class="section-title">Coach Suggestions (AI)</h2>
+          <p class="muted" style="margin:6px 0 12px 0;">Automated suggestions generated from match data (adjust rules server-side for different behaviour).</p>
+
+          <div class="suggestion-card">
+            {% if data.suggestions %}
+              {% for sg in data.suggestions %}
+                <div class="sug-item">
+                  <div class="sug-title">{{ sg.player_name or "Team" }}</div>
+                  <ul style="margin:6px 0 0 18px;padding:0;">
+                    {% for t in sg.suggestions %}
+                      <li style="margin:4px 0;">{{ t }}</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="muted">No automated suggestions available. Generate suggestions server-side (see match_report view).</div>
+            {% endif %}
+          </div>
+
+          {# <div style="margin-top:12px">
+   <a class="btn btn-outline" href="{{ url_for('regenerate_suggestions', match_id=data.match.id) }}">
+      Regenerate Suggestions
+   </a>
+</div> #}
+</div>
+
+        <!-- Top Performances -->
+        <div class="card" style="margin-bottom:12px;">
+          <h2 class="section-title">Top Performances</h2>
+          <div class="three" style="margin-top:10px;">
+            <div class="col">
+              <div style="font-weight:700;color:var(--muted);margin-bottom:8px;">Batting</div>
+              <table class="compact">
+                <tbody>
+                {% for b in data.top_batting %}
+                  <tr><td>{{ b.player_name }}</td><td style="text-align:right">{{ b.runs }} ({{ b.balls }}b)</td></tr>
+                {% endfor %}
+                {% if not data.top_batting %}
+                  <tr><td class="muted">No batting entries</td></tr>
+                {% endif %}
+                </tbody>
+              </table>
+            </div>
+
+            <div class="col">
+              <div style="font-weight:700;color:var(--muted);margin-bottom:8px;">Bowling</div>
+              <table class="compact">
+                <tbody>
+                {% for bw in data.top_bowling %}
+                  <tr><td>{{ bw.player_name }}</td><td style="text-align:right">{{ bw.wickets }} wkts</td></tr>
+                {% endfor %}
+                {% if not data.top_bowling %}
+                  <tr><td class="muted">No bowling entries</td></tr>
+                {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wagon wheel -->
+        <div class="card">
+          <h2 class="section-title">Wagon Wheel Highlights</h2>
+          {% if data.wagon_list %}
+            <div style="margin-top:10px;">
+              {% for w in data.wagon_list %}
+                <div style="margin-bottom:10px;">
+                  <div style="font-weight:700">{{ w.player_name }}</div>
+                  <div style="margin-top:6px;">
+                    {% for s in w.shots %}
+                      <span class="small" style="display:inline-block;margin-right:8px;padding:6px 8px;border-radius:8px;background:#fbfbfb;border:1px solid #f0f4fb;">{{ s.angle }}° → {{ s.runs }}</span>
+                    {% endfor %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="muted" style="margin-top:8px;">No wagon wheel data recorded.</div>
+          {% endif %}
         </div>
       </div>
     </div>
 
-    <!-- wagon highlights -->
-    <div class="section">
-      <h2 class="section-title">Wagon Wheel Highlights</h2>
-      {% if data.wagon_by_player %}
-        <table>
-          <tr><th>Player</th><th>Shots (angle → runs)</th></tr>
-          {% for pid, shots in data.wagon_by_player.items() %}
-            <tr>
-              <td>{{ (shots and (shots[0] and ( (data.per_player[pid].player.user.username) if pid in data.per_player else "Player "+pid|string ))) }}</td>
-              <td>
-                {% for s in shots %}
-                  <div class="small">{{ s.angle }}° → {{ s.runs }} ({{ s.shot_type }})</div>
-                {% endfor %}
-              </td>
-            </tr>
-          {% endfor %}
-        </table>
-      {% else %}
-        <p class="muted">No wagon wheel data recorded.</p>
-      {% endif %}
-    </div>
-
-    <!-- Suggestions -->
-    <div class="section">
-      <h2 class="section-title">Coach Suggestions (Automated)</h2>
-      <p class="small muted">Suggestions are generated using simple heuristics — refine them later for your academy.</p>
-
-      {% for p in data.suggestions %}
-        <div style="margin-bottom:10px;">
-          <strong>{{ p.player.user.username if p.player else "Unknown" }}</strong>
-          <ul class="suggestions">
-            {% for s in p.suggestions %}
-              <li class="small">{{ s }}</li>
-            {% endfor %}
-          </ul>
-        </div>
-      {% endfor %}
-    </div>
-
-    <footer>Report generated at {{ data.generated_at.strftime("%Y-%m-%d %H:%M:%S") }} (UTC)</footer>
+    <footer>Report generated at {{ data.generated_at.strftime("%Y-%m-%d %H:%M:%S") }}</footer>
   </div>
 </body>
 </html>
