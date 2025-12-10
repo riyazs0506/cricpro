@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="mb-3">Player Statistics</h2>
+
+<div class="card shadow-sm p-4">
+
+    <h4>{{ player.user.username }}</h4>
+
+    {% if player.stats %}
+        <table class="table mt-3">
+            <thead class="table-dark">
+                <tr>
+                    <th>Matches</th>
+                    <th>Runs</th>
+                    <th>Balls</th>
+                    <th>4s</th>
+                    <th>6s</th>
+                    <th>Bat SR</th>
+                    <th>Wkts</th>
+                    <th>Runs Conceded</th>
+                    <th>Overs</th>
+                    <th>Eco</th>
+                    <th>Catches</th>
+                    <th>Drops</th>
+                    <th>Saves</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td>{{ player.stats.matches }}</td>
+                    <td>{{ player.stats.runs }}</td>
+                    <td>{{ player.stats.balls_faced }}</td>
+                    <td>{{ player.stats.fours }}</td>
+                    <td>{{ player.stats.sixes }}</td>
+                    <td>{{ "%.2f"|format((player.stats.runs/player.stats.balls_faced*100) if player.stats.balls_faced > 0 else 0) }}</td>
+
+                    <td>{{ player.stats.wickets }}</td>
+                    <td>{{ player.stats.runs_conceded }}</td>
+                    <td>{{ player.stats.overs }}</td>
+                    <td>{{ "%.2f"|format((player.stats.runs_conceded/player.stats.overs) if player.stats.overs > 0 else 0) }}</td>
+
+                    <td>{{ player.stats.catches }}</td>
+                    <td>{{ player.stats.drops }}</td>
+                    <td>{{ player.stats.saves }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+    {% else %}
+        <p class="text-muted">No stats available for this player yet.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

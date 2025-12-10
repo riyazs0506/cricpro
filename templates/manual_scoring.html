@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+{% block title %}Manual Scoring — {{ match.title }}{% endblock %}
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+<style>
+/* Batting table improvements: compact, no-wrap, last columns stay in row */
+.batting-table th, .batting-table td { text-align: center; vertical-align: middle; }
+.batting-table td { white-space: nowrap; padding: 6px 8px; }
+.batting-table .player-cell { text-align: left; white-space: normal; min-width: 170px; }
+.batting-table .score-input {
+  width: 72px;
+  padding: 6px 6px;
+  font-size: 0.98rem;
+  border-radius: 6px;
+  text-align: center;
+}
+.batting-table .small-input { width: 58px; }
+.batting-table .dismissal-select { min-width: 140px; }
+.batting-table .remove-row { padding: 6px 8px; border-radius: 6px; }
+
+/* Prevent the table from breaking into multiple lines for small screens */
+@media (max-width: 920px) {
+  .batting-table td { padding: 6px 4px; }
+  .batting-table .player-cell { min-width: 120px; }
+  .batting-table .score-input { width: 58px; font-size: 0.9rem; }
+  .batting-table .small-input { width: 48px; }
+}
+
+/* small helper for big litters (visual emphasis) */
+.big-num { font-weight: 700; font-size: 1.05rem; }
+</style>
+
+<div class="container">
+  <a class="btn-back mb-3" onclick="history.back()">← Back</a>
+
+  <h3 class="mb-2">{{ match.title }} — Manual Scoring</h3>
+
+  <div class="card p-3">
+
+    <!-- MATCH INFO -->
+    <div class="d-flex justify-content-between mb-3">
+      <div>
+        <strong>Date:</strong> {{ match.match_date }} <br>
+        <strong>Mode:</strong> {{ match.scoring_mode }}
+      </div>
+      <div class="text-end">
+        <small class="text-muted">Players: {{ players|length }}</small><br>
+        <small class="text-muted">Opponents: {{ opponents|length }}</small>
+      </div>
+    </div>
+
+    <!-- INNINGS -->
+    <div class="mb-3">
+      <label class="form-label">Innings</label>
+      <select id="inningsSelect" class="form-select" aria-label="Select Innings">
+        <option value="1" {% if match.current_innings == 1 %}selected{% endif %}>
+          1st Innings — {% if match.batting_side == "team" %}{{ match.team_name }} batting{% else %}{{ match.opponent_name }} batting{% endif %}
+        </option>
+        <option value="2" {% if match.current_innings == 2 %}selected{% endif %}>2nd Innings</option>
+      </select>
+      <div class="text-muted small mt-1">Use innings selector to switch UI for batting / bowling / opponent summary.</div>
+    </div>
+
+    <div class="row gx-3">
+      <!-- LEFT: SCORING -->
+      <div class="col-lg-8">
+
+        <!-- BATTING (compact / no-wrapping) -->
+        <div id="ourBatSection" class="card p-3 mb-3">
+          <h5 class="mb-3">Batting — {{ match.team_name }}</h5>
+
+          <div class="table-responsive">
+            <table class="table table-bordered batting-table mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="player-cell">Player</th>
+                  <th style="width:80px">Runs</th>
+                  <th style="width:80px">Balls</th>
+                  <th style="width:68px">4s</th>
+                  <th style="width:68px">6s</th>
+                  <th style="width:86px">Out?</th>
+                  <th style="width:150px">Dismissal</th>
+                  <th style="width:70px">Over</th>
+                  <th style="width:70px">Ball</th>
+                  <th style="width:50px"></th>
+                </tr>
+              </thead>
+              <tbody id="batting-container"></tbody>
+            </table>
+          </div>
+
+          <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-outline-primary" id="addBatsmanBtn">+ Add Batsman</button>
+            <button class="btn btn-outline-secondary" id="fillDefaultBatsmenBtn">Auto-add (11)</button>
+            <div class="ms-auto text-muted align-self-center small">Tip: use Auto-add to populate squad quickly.</div>
+          </div>
+        </div>
+
+        <!-- BOWLING -->
+        <div id="ourBowlSection" class="card p-3 mb-3">
+          <h5>Bowling — {{ match.team_name }}</h5>
+          <div class="table-responsive">
+            <table class="table table-bordered mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th style="width:220px">Player</th>
+                  <th style="width:90px">Overs</th>
+                  <th style="width:90px">Runs</th>
+                  <th style="width:90px">Wkts</th>
+                  <th style="width:60px"></th>
+                </tr>
+              </thead>
+              <tbody id="bowling-container"></tbody>
+            </table>
+          </div>
+          <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-outline-primary" id="addBowlerBtn">+ Add Bowler</button>
+            <button class="btn btn-outline-secondary" id="fillDefaultBowlersBtn">Auto-add (6)</button>
+          </div>
+        </div>
+
+        <!-- FIELDING -->
+        <div id="ourFieldSection" class="card p-3 mb-3">
+          <h5>Fielding — {{ match.team_name }}</h5>
+          <div class="table-responsive">
+            <table class="table table-bordered mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th style="width:220px">Player</th>
+                  <th style="width:90px">Catches</th>
+                  <th style="width:90px">Drops</th>
+                  <th style="width:90px">Saves</th>
+                  <th style="width:60px"></th>
+                </tr>
+              </thead>
+              <tbody id="fielding-container"></tbody>
+            </table>
+          </div>
+          <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-outline-primary" id="addFieldingBtn">+ Add Fielding</button>
+            <button class="btn btn-outline-secondary" id="fillDefaultFieldersBtn">Auto-add (11)</button>
+          </div>
+        </div>
+
+        <!-- OPPONENT SIMPLE SUMMARY -->
+        <div id="oppSimpleSection" class="card p-3 mb-3">
+          <h5>Opponent — Summary</h5>
+          <div class="table-responsive">
+            <table class="table mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th style="width:90px">Runs</th>
+                  <th style="width:90px">Wkts</th>
+                  <th style="width:90px">Extras</th>
+                  <th style="width:120px">Overs</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><input id="oppRuns" class="form-control big-num" type="number" min="0"></td>
+                  <td><input id="oppWickets" class="form-control big-num" type="number" min="0"></td>
+                  <td><input id="oppExtras" class="form-control big-num" type="number" min="0"></td>
+                  <td><input id="oppOvers" class="form-control" type="text" placeholder="e.g. 19.2"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: WAGON + OVERVIEW -->
+      <div class="col-lg-4">
+
+        <div class="card p-3 mb-3">
+          <h5>Wagon Wheel</h5>
+
+          <label class="form-label">Player</label>
+          <select id="wagonPlayer" class="form-select mb-2">
+            <option value="">— select player —</option>
+            {% for p in players %}
+              <option value="{{ p.id }}">{{ p.user.username }}</option>
+            {% endfor %}
+          </select>
+
+          <canvas id="wagonCanvas" width="300" height="300" style="display:block;margin:0 auto;border-radius:8px;background:#fff;"></canvas>
+
+          <div class="mt-2">
+            <label class="form-label">Run / Shot</label>
+            <div class="d-flex gap-2">
+              <select id="wagonRun" class="form-select">
+                <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                <option value="3">3</option><option value="4">4</option><option value="6">6</option>
+              </select>
+              <select id="wagonShotType" class="form-select">
+                <option value="drive">Drive</option>
+                <option value="pull">Pull</option>
+                <option value="cut">Cut</option>
+                <option value="lofted">Lofted</option>
+                <option value="scoop">Scoop</option>
+              </select>
+            </div>
+            <div class="d-flex gap-2 mt-2">
+              <button class="btn btn-outline-primary" id="startWagon">Start Selecting</button>
+              <button class="btn btn-outline-danger" id="clearWagonBtn">Clear Shots</button>
+            </div>
+          </div>
+
+          <ul id="shotsList" class="list-group mt-3"></ul>
+        </div>
+
+        <div class="card p-3">
+          <h5>Overview</h5>
+          <div class="mb-1"><strong>Our Total:</strong> <span id="ourTotalRuns" class="big-num">0</span>/<span id="ourTotalWkts" class="big-num">0</span></div>
+          <div><strong>Opponent:</strong> <span id="oppTotalRunsDisplay">0</span>/<span id="oppTotalWktsDisplay">0</span></div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+      <button class="btn btn-success" id="saveManualBtn">Save Manual Scoring</button>
+      <a href="{{ url_for('match_detail', match_id=match.id) }}" class="btn btn-outline-primary">Back</a>
+      <div class="ms-auto text-muted small align-self-center">UI optimized for compact scoring — batting inputs won't wrap.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SAFE JS VARIABLES -->
+<script>
+  window.MATCH = {
+    id: {{ match.id }},
+    team_name: "{{ match.team_name|e }}",
+    opponent_name: "{{ match.opponent_name|e }}",
+    current_innings: {{ match.current_innings or 1 }},
+    batting_side: "{{ match.batting_side or 'team' }}"
+  };
+
+  window.MS_PLAYERS = [
+    {% for p in players %}
+      { id: {{ p.id }}, name: "{{ p.user.username|e }}" }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ];
+</script>
+
+<!-- Use your existing wagon_wheel.js and manual_scoring.js for row builders / save -->
+<script src="{{ url_for('static', filename='js/wagon_wheel.js') }}"></script>
+<script src="{{ url_for('static', filename='js/manual_scoring.js') }}"></script>
+
+<!-- Inline small script to enforce the innings show/hide rules and bind a few helper buttons -->
+<script>
+  // apply innings rules (strict per your spec)
+  function applyInningsUI_strict() {
+    const inn = parseInt(document.getElementById('inningsSelect')?.value || 1);
+    const firstInnTeamBatted = (window.MATCH.batting_side === "team"); // true if team batted first
+
+    // hide all
+    ['ourBatSection','ourBowlSection','ourFieldSection','oppSimpleSection'].forEach(id=>{
+      const el = document.getElementById(id); if(el) el.style.display = 'none';
+    });
+
+    if (inn === 1) {
+      if (firstInnTeamBatted) {
+        // our team batting -> show batting only (no opponent summary)
+        document.getElementById('ourBatSection').style.display = 'block';
+      } else {
+        // opponent batting first -> show bowling + fielding + opponent summary
+        document.getElementById('ourBowlSection').style.display = 'block';
+        document.getElementById('ourFieldSection').style.display = 'block';
+        document.getElementById('oppSimpleSection').style.display = 'block';
+      }
+    } else {
+      // 2nd innings: reverse roles
+      const secondBatting = firstInnTeamBatted ? 'opponent' : 'team'; // who bats in 2nd innings
+      if (secondBatting === 'team') {
+        // team batting in 2nd innings -> show batting only
+        document.getElementById('ourBatSection').style.display = 'block';
+        // Opponent summary: show if *our team is bowling* — but here team is batting, so do NOT show
+      } else {
+        // opponent batting now -> our team bowling -> show bowling+fielding + opp summary
+        document.getElementById('ourBowlSection').style.display = 'block';
+        document.getElementById('ourFieldSection').style.display = 'block';
+        document.getElementById('oppSimpleSection').style.display = 'block';
+      }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    // call the standard applyInningsUI from manual_scoring.js if present, otherwise use the strict one here
+    if (typeof applyInningsUI === 'function') {
+      applyInningsUI(); // let external script set UI if it has its own logic
+    } else {
+      applyInningsUI_strict();
+    }
+
+    // ensure our strict rule is re-applied when innings select changes
+    document.getElementById('inningsSelect')?.addEventListener('change', function(){
+      if (typeof applyInningsUI === 'function') {
+        // prefer external function but enforce rules after a moment (if external changes UI differently)
+        applyInningsUI();
+        setTimeout(applyInningsUI_strict, 20);
+      } else {
+        applyInningsUI_strict();
+      }
+    });
+
+    // connect Auto-add buttons to functions in manual_scoring.js if present, otherwise fallback to basic behaviour
+    document.getElementById('fillDefaultBatsmenBtn')?.addEventListener('click', function(e){
+      e.preventDefault();
+      if (typeof window.MS_PLAYERS === 'object' && typeof addBattingRow === 'function') {
+        const ids = window.MS_PLAYERS.map(p=>p.id).slice(0,11);
+        ids.forEach(id => addBattingRow({ player_id: id }));
+      } else {
+        alert('Auto-add not available: missing addBattingRow function.');
+      }
+    });
+
+    document.getElementById('fillDefaultBowlersBtn')?.addEventListener('click', function(e){
+      e.preventDefault();
+      if (typeof addBowlingRow === 'function') {
+        const ids = window.MS_PLAYERS.map(p=>p.id).slice(0,6);
+        ids.forEach(id => addBowlingRow({ player_id: id }));
+      } else {
+        alert('Auto-add not available: missing addBowlingRow function.');
+      }
+    });
+
+    document.getElementById('fillDefaultFieldersBtn')?.addEventListener('click', function(e){
+      e.preventDefault();
+      if (typeof addFieldingRow === 'function') {
+        const ids = window.MS_PLAYERS.map(p=>p.id).slice(0,11);
+        ids.forEach(id => addFieldingRow({ player_id: id }));
+      } else {
+        alert('Auto-add not available: missing addFieldingRow function.');
+      }
+    });
+
+    // wire wagon start if external function exists
+    if (typeof window.initWagonClickHandler === 'function') {
+      // manual_scoring.js or wagon_wheel.js likely binds this; we keep it safe
+    }
+
+    // recompute overview initially if function exists (computeOverview in external js)
+    if (typeof computeOverview === 'function') computeOverview();
+  });
+</script>
+
+{% endblock %}

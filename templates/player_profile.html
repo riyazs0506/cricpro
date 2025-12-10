@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="mb-3">My Profile</h2>
+
+<div class="card shadow-sm p-4">
+
+    <h4>{{ player.user.username }}</h4>
+    <p><strong>Email:</strong> {{ player.user.email }}</p>
+
+    <hr>
+
+    <p>
+        <strong>Role:</strong> {{ player.role_in_team or "-" }}<br>
+        <strong>Batting Style:</strong> {{ player.batting_style or "-" }}<br>
+        <strong>Bowling Style:</strong> {{ player.bowling_style or "-" }}<br>
+        <strong>Wicket Keeper:</strong> {{ "Yes" if player.wicket_keeper else "No" }}<br>
+        <strong>Age:</strong> {{ player.age or "-" }}<br>
+        <strong>Batch:</strong> {{ player.batch.name if player.batch else "-" }}<br>
+    </p>
+
+    <p>
+        <strong>Bio:</strong><br>
+        {{ player.bio or "No bio added yet." }}
+    </p>
+
+    <a href="{{ url_for('player_edit_profile') }}" class="btn btn-primary mt-2">
+        Edit Profile
+    </a>
+
+</div>
+
+{% endblock %}

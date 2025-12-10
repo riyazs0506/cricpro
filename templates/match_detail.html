@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+
+    <a href="{{ url_for('match_list') }}" class="btn-back">← Back</a>
+
+    <div class="card mt-3">
+        <h2>{{ match.title }}</h2>
+        <p class="text-muted">{{ match.match_date }} • {{ match.team_name }} vs {{ match.opponent_name }}</p>
+
+        <hr>
+
+        <!-- MATCH STATUS -->
+        {% if match.status == "ongoing" %}
+            <span class="badge bg-info">Match Created</span>
+        {% elif match.status == "inning1" %}
+            <span class="badge bg-primary">1st Innings</span>
+        {% elif match.status == "inning2" %}
+            <span class="badge bg-warning">2nd Innings</span>
+        {% elif match.status == "pending_approval" %}
+            <span class="badge bg-secondary">Waiting for Approval</span>
+        {% elif match.status == "completed" %}
+            <span class="badge bg-success">Completed</span>
+        {% endif %}
+
+        <hr>
+
+        <!-- SQUAD -->
+        <p><b>Your Squad Selected:</b> {{ playing_count }} players</p>
+        <p><b>Opponent Players:</b> {{ opponent_count }} players</p>
+
+        <a class="btn btn-outline-primary mt-2" href="{{ url_for('select_players', match_id=match.id) }}">
+            Manage Squad
+        </a>
+
+        <hr>
+
+        <!-- SCORING BUTTON (with innings flow) -->
+        {% if can_score %}
+
+            {% if match.status == "ongoing" %}
+                <a href="{{ url_for('manual_scoring', match_id=match.id) }}" class="btn btn-primary">
+                    Start 1st Innings
+                </a>
+
+            {% elif match.status == "inning1" %}
+                <a href="{{ url_for('manual_scoring', match_id=match.id) }}" class="btn btn-primary">
+                    Continue 1st Innings
+                </a>
+
+            {% elif match.status == "inning2" %}
+                <a href="{{ url_for('manual_scoring', match_id=match.id) }}" class="btn btn-primary">
+                    Continue 2nd Innings
+                </a>
+
+            {% elif match.status == "pending_approval" %}
+                <p class="text-muted mt-2">Waiting for coach approval…</p>
+
+            {% endif %}
+
+        {% endif %}
+
+        <hr>
+
+        <!-- APPROVE (coach only) -->
+        {% if current_user.role == "coach" and match.status == "pending_approval" %}
+            <form action="{{ url_for('coach_approve_match', match_id=match.id) }}" method="POST">
+                <button class="btn btn-success">Approve Match & Update Player Stats</button>
+            </form>
+        {% endif %}
+
+        <hr>
+
+        <a class="btn btn-outline-primary" href="{{ url_for('ball_history', match_id=match.id) }}">
+            View Ball History
+        </a>
+
+        <a class="btn btn-outline-primary" href="{{ url_for('live_score_view', match_id=match.id) }}">
+            View Live Scoreboard
+        </a>
+
+        <a href="{{ url_for('match_report_pdf', match_id=match.id) }}" 
+             class="btn btn-danger mt-2">
+             📄 Download Match Report (PDF)
+        </a>
+
+
+    </div>
+</div>
+{% endblock %}

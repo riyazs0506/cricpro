@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}All Matches{% endblock %}
+
+{% block content %}
+<h3 class="fw-bold mb-3">All Matches</h3>
+
+<div class="card p-3">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Match</th>
+                <th>Date</th>
+                <th>Mode</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for m in matches %}
+            <tr>
+                <td>{{ m.title }}</td>
+                <td>{{ m.match_date }}</td>
+                <td>{{ m.scoring_mode }}</td>
+                <td>{{ m.status }}</td>
+                <td>
+                    <a href="{{ url_for('match_detail', match_id=m.id) }}" class="btn btn-sm btn-primary">
+                        View
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

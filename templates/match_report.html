@@ -1,0 +1,150 @@
+{# templates/match_report.html #}
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Match Report — {{ data.match.title }}</title>
+  <style>
+    /* Professional modern look */
+    body { font-family: "Helvetica Neue", Arial, sans-serif; color:#222; font-size:12px; }
+    .header { background: linear-gradient(90deg,#0d6efd,#0b5ed7); color: #fff; padding:18px 22px; }
+    .header h1 { margin:0; font-size:20px; font-weight:700; }
+    .meta { margin-top:8px; font-size:12px; opacity:0.95; }
+    .container { padding:18px; }
+    .section { margin-bottom:18px; }
+    h2.section-title { font-size:14px; color:#0b5ed7; margin:0 0 8px 0; font-weight:700; }
+    table { width:100%; border-collapse: collapse; background: #f7f7f7; }
+    table th, table td { padding:8px 10px; border:1px solid #e2e2e2; text-align:left; }
+    table th { background:#efefef; font-weight:700; color:#111; }
+    .three-cols { display:flex; gap:12px; }
+    .col { flex:1; }
+    .muted { color:#666; font-size:11px; }
+    .score-big { font-size:20px; font-weight:700; color:#111; }
+    .highlight { background:#e9f2ff; padding:8px; border-radius:4px; }
+    .suggestions { margin-top:10px; }
+    .small { font-size:11px; color:#444; }
+    footer { margin-top:20px; font-size:10px; color:#666; text-align:right; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Match Report — {{ data.match.title }}</h1>
+    <div class="meta">
+      {{ data.match.match_date }} • Venue: {{ data.match.venue or "-" }} • Type: {{ data.match.format or "-" }}
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- Overview -->
+    <div class="section">
+      <h2 class="section-title">Match Overview</h2>
+      <table>
+        <tr><th>Team</th><th>Score (R/W)</th><th>Overs</th></tr>
+        <tr>
+          <td><strong>{{ data.match.team_name or "Our Team" }}</strong></td>
+          <td class="score-big">{{ data.our.runs or 0 }} / {{ data.our.wickets or 0 }}</td>
+          <td>{{ "%.1f" % (data.our.overs or 0) }}</td>
+        </tr>
+        <tr>
+          <td><strong>{{ data.match.opponent_name or "Opponent" }}</strong></td>
+          <td class="score-big">{{ data.opponent.runs or 0 }} / {{ data.opponent.wickets or 0 }}</td>
+          <td>-</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Top performers -->
+    <div class="section">
+      <h2 class="section-title">Top Performances</h2>
+      <div class="three-cols">
+        <div class="col">
+          <h3 class="small">Batting</h3>
+          <table>
+            <tr><th>Player</th><th>Runs</th><th>Balls</th></tr>
+            {% for b in data.top_batting %}
+            <tr>
+              <td>{{ b.player.user.username if b.player else "—" }}</td>
+              <td>{{ b.runs or 0 }}</td>
+              <td>{{ b.balls or 0 }}</td>
+            </tr>
+            {% endfor %}
+            {% if not data.top_batting %}<tr><td colspan="3" class="muted">No batting entries</td></tr>{% endif %}
+          </table>
+        </div>
+
+        <div class="col">
+          <h3 class="small">Bowling</h3>
+          <table>
+            <tr><th>Player</th><th>Wkts</th><th>Overs</th></tr>
+            {% for bw in data.top_bowling %}
+            <tr>
+              <td>{{ bw.player.user.username if bw.player else "—" }}</td>
+              <td>{{ bw.wickets or 0 }}</td>
+              <td>{{ "%.1f"|format(bw.overs or 0) }}</td>
+            </tr>
+            {% endfor %}
+            {% if not data.top_bowling %}<tr><td colspan="3" class="muted">No bowling entries</td></tr>{% endif %}
+          </table>
+        </div>
+
+        <div class="col">
+          <h3 class="small">Fielding</h3>
+          <table>
+            <tr><th>Player</th><th>Catches</th></tr>
+            {% for f in data.top_fielding %}
+            <tr>
+              <td>{{ f.player.user.username if f.player else "—" }}</td>
+              <td>{{ f.catches or 0 }}</td>
+            </tr>
+            {% endfor %}
+            {% if not data.top_fielding %}<tr><td colspan="2" class="muted">No fielding entries</td></tr>{% endif %}
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- wagon highlights -->
+    <div class="section">
+      <h2 class="section-title">Wagon Wheel Highlights</h2>
+      {% if data.wagon_by_player %}
+        <table>
+          <tr><th>Player</th><th>Shots (angle → runs)</th></tr>
+          {% for pid, shots in data.wagon_by_player.items() %}
+            <tr>
+              <td>{{ (shots and (shots[0] and ( (data.per_player[pid].player.user.username) if pid in data.per_player else "Player "+pid|string ))) }}</td>
+              <td>
+                {% for s in shots %}
+                  <div class="small">{{ s.angle }}° → {{ s.runs }} ({{ s.shot_type }})</div>
+                {% endfor %}
+              </td>
+            </tr>
+          {% endfor %}
+        </table>
+      {% else %}
+        <p class="muted">No wagon wheel data recorded.</p>
+      {% endif %}
+    </div>
+
+    <!-- Suggestions -->
+    <div class="section">
+      <h2 class="section-title">Coach Suggestions (Automated)</h2>
+      <p class="small muted">Suggestions are generated using simple heuristics — refine them later for your academy.</p>
+
+      {% for p in data.suggestions %}
+        <div style="margin-bottom:10px;">
+          <strong>{{ p.player.user.username if p.player else "Unknown" }}</strong>
+          <ul class="suggestions">
+            {% for s in p.suggestions %}
+              <li class="small">{{ s }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endfor %}
+    </div>
+
+    <footer>Report generated at {{ data.generated_at.strftime("%Y-%m-%d %H:%M:%S") }} (UTC)</footer>
+  </div>
+</body>
+</html>

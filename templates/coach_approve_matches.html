@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block title %}Approve Match — {{ match.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <a onclick="history.back()" class="btn btn-secondary mb-3">← Back</a>
+
+  <h2>Review & Approve Match</h2>
+  <h5 class="text-muted">{{ match.title }} — {{ match.match_date }}</h5>
+
+  <div class="alert alert-warning mt-3">
+    <strong>Status:</strong>
+    {% if match.status == "pending_approval" %}
+      <span class="badge bg-warning text-dark">Pending Approval</span>
+    {% elif match.status == "completed" %}
+      <span class="badge bg-success">Completed</span>
+    {% else %}
+      <span class="badge bg-info text-dark">{{ match.status or "N/A" }}</span>
+    {% endif %}
+  </div>
+
+  <!-- MATCH OVERVIEW -->
+  <div class="card p-3 mb-4 shadow-sm">
+    <h5>Match Summary</h5>
+    <p><strong>{{ match.team_name }}</strong> vs <strong>{{ match.opponent_name }}</strong></p>
+
+    <table class="table table-bordered text-center mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Team</th>
+          <th>Runs</th>
+          <th>Wickets</th>
+          <th>Overs</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{ match.team_name or "Team" }}</td>
+          <td>{{ match.team_runs or 0 }}</td>
+          <td>{{ match.team_wkts or 0 }}</td>
+          <td>{{ match.team_overs or "0.0" }}</td>
+        </tr>
+        <tr>
+          <td>{{ match.opponent_name or "Opponent" }}</td>
+          <td>{{ match.opp_runs or 0 }}</td>
+          <td>{{ match.opp_wkts or 0 }}</td>
+          <td>{{ match.opp_overs or "0.0" }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- BATTING -->
+  <div class="card p-3 shadow-sm mb-4">
+    <h5>Batting Scorecard</h5>
+
+    {% if batting and batting|length > 0 %}
+      <div class="table-responsive">
+        <table class="table table-striped mb-0">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Runs</th>
+              <th>Balls</th>
+              <th>4s</th>
+              <th>6s</th>
+              <th>Out</th>
+              <th>Over</th>
+              <th>Ball</th>
+              <th>Dismissal</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in batting %}
+            <tr>
+              <td>{{ r.player.user.username if r.player else "—" }}</td>
+              <td>{{ r.runs or 0 }}</td>
+              <td>{{ r.balls_faced or 0 }}</td>
+              <td>{{ r.fours or 0 }}</td>
+              <td>{{ r.sixes or 0 }}</td>
+              <td>{% if r.is_out %}Yes{% else %}No{% endif %}</td>
+              <td>{{ r.wicket_over if r.wicket_over is not none else "-" }}</td>
+              <td>{{ r.wicket_ball if r.wicket_ball is not none else "-" }}</td>
+              <td>{{ r.dismissal_type or "-" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-muted mb-0">No batting rows recorded.</p>
+    {% endif %}
+  </div>
+
+  <!-- BOWLING -->
+  <div class="card p-3 shadow-sm mb-4">
+    <h5>Bowling Scorecard</h5>
+
+    {% if bowling and bowling|length > 0 %}
+      <div class="table-responsive">
+        <table class="table table-striped mb-0">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Overs</th>
+              <th>Runs</th>
+              <th>Wickets</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in bowling %}
+            <tr>
+              <td>{{ r.player.user.username if r.player else "—" }}</td>
+              <td>{{ r.overs if r.overs is not none else "0.0" }}</td>
+              <td>{{ r.runs_conceded or 0 }}</td>
+              <td>{{ r.wickets or 0 }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-muted mb-0">No bowling rows recorded.</p>
+    {% endif %}
+  </div>
+
+  <!-- FIELDING -->
+  <div class="card p-3 shadow-sm mb-4">
+    <h5>Fielding Summary</h5>
+
+    {% if fielding and fielding|length > 0 %}
+      <div class="table-responsive">
+        <table class="table table-striped mb-0">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Catches</th>
+              <th>Drops</th>
+              <th>Saves</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in fielding %}
+            <tr>
+              <td>{{ r.player.user.username if r.player else "—" }}</td>
+              <td>{{ r.catches or 0 }}</td>
+              <td>{{ r.drops or 0 }}</td>
+              <td>{{ r.saves or 0 }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-muted mb-0">No fielding entries recorded.</p>
+    {% endif %}
+  </div>
+
+  <!-- WAGON WHEEL (optional quick view) -->
+  {% if wagon and wagon|length > 0 %}
+  <div class="card p-3 shadow-sm mb-4">
+    <h5>Wagon Wheel Shots (summary)</h5>
+    <ul class="list-group">
+      {% for s in wagon %}
+        <li class="list-group-item">
+          {{ s.player.user.username if s.player else "—" }} — {{ s.runs or 0 }} runs @ {{ s.angle or 0 }}° ({{ s.shot_type or "—" }})
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <!-- AI SUGGESTIONS -->
+  <div class="card p-3 shadow-sm mb-4">
+    <h5>AI Coach Suggestions</h5>
+    {% if suggestions and suggestions|length > 0 %}
+      <ul class="mb-0">
+        {% for s in suggestions %}
+          <li>{{ s }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted mb-0">No suggestions available.</p>
+    {% endif %}
+  </div>
+
+  <!-- Approve button -->
+  <div class="text-center mb-5">
+    <form method="POST" action="{{ url_for('coach_approve_match', match_id=match.id) }}">
+      <!-- If using Flask-WTF include csrf_token here: {{ form.csrf_token }} -->
+      <button type="submit" class="btn btn-success btn-lg" onclick="return confirm('Are you sure you want to approve this match? This will merge manual scores into player stats.')">
+        ✔ Approve Match & Update Player Stats
+      </button>
+      <a href="{{ url_for('dashboard_coach') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Wagon Wheel – {{ player.user.username }} ({{ match.title }})</h2>
+
+<canvas id="wagonCanvas" width="600" height="600"
+        style="border: 1px solid #ccc; border-radius: 50%;">
+</canvas>
+
+<script>
+    const shots = {{ shots | tojson }};
+</script>
+
+<script src="/static/js/wagon_wheel.js"></script>
+
+{% endblock %}

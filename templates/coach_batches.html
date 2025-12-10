@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h3>Batches</h3>
+
+<table class="table table-bordered">
+    <tr>
+        <th>Batch Name</th>
+        <th>Age Range</th>
+        <th>Total Players</th>
+    </tr>
+
+    {% for b in batches %}
+    <tr>
+        <td>{{ b.name }}</td>
+        <td>{{ b.min_age }} - {{ b.max_age }}</td>
+        <td>{{ b.players|length }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

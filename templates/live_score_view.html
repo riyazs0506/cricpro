@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Live Scoreboard – {{ match.title }}</h2>
+
+<div id="live-container" class="card shadow-sm p-4">
+    <p class="text-muted">Loading live score...</p>
+</div>
+
+<script src="/static/js/live_score_view.js"></script>
+
+{% endblock %}

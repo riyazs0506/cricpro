@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+{% include 'components/back_button.html' %}
+<h3>Live Score — {{ match.title }}</h3>
+<div class="mb-3">
+  <button class="btn btn-success" id="refreshBtn">Refresh</button>
+</div>
+<div id="scoreEvents" class="mb-3"></div>
+
+{% if current_user.role in ['coach','admin'] %}
+<div class="card mb-3">
+  <div class="card-body">
+    <h5>Add Ball</h5>
+    <div class="row g-2">
+      <div class="col"><input id="over_no" class="form-control" placeholder="Over #"></div>
+      <div class="col"><input id="ball_no" class="form-control" placeholder="Ball #"></div>
+      <div class="col"><input id="runs" class="form-control" placeholder="Runs"></div>
+      <div class="col"><input id="extras" class="form-control" placeholder="Extras"></div>
+      <div class="col"><input id="wicket" class="form-control" placeholder="Wicket"></div>
+    </div>
+    <div class="mt-2">
+      <input id="commentary" class="form-control" placeholder="Commentary">
+    </div>
+    <div class="mt-2">
+      <button id="addBall" class="btn btn-primary">Add Ball</button>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script>
+const matchId = {{ match.id }};
+</script>
+{% endblock %}

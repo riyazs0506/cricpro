@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h3 class="fw-bold mb-3">Pending Player Approvals</h3>
+
+<div class="card p-3">
+    {% if players %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Player</th>
+                <th>Age</th>
+                <th>Profile</th>
+                <th>Status</th>
+                <th>Approve</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in players %}
+            <tr>
+                <td>{{ p.user.display_name }}</td>
+                <td>{{ p.age or "--" }}</td>
+                <td>
+                    <a href="{{ url_for('player_profile_view', player_id=p.id) }}"
+                       class="btn btn-secondary btn-sm">View</a>
+                </td>
+                <td>
+                    <span class="badge bg-warning text-dark">Pending</span>
+                </td>
+                <td>
+                    <a href="{{ url_for('coach_approve_status', user_id=p.user.id) }}"
+                       class="btn btn-success btn-sm">Approve Player</a>
+                    <a href="{{ url_for('coach_approve_batch', player_id=p.id) }}"
+                       class="btn btn-primary btn-sm mt-1">Assign Batch</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% else %}
+    <p class="text-center text-muted">No pending players.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

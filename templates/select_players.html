@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Select Players – {{ match.title }}</h2>
+
+<div class="row">
+
+    <!-- OUR PLAYERS -->
+    <div class="col-md-6">
+        <div class="card shadow-sm p-3">
+            <h5>Your Players</h5>
+            <p class="text-muted">Choose minimum 11 players.</p>
+
+            <ul class="list-group" id="player-list">
+                {% for p in system_players %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ p.user.username }}
+                        <input type="checkbox"
+                               class="form-check-input select-player"
+                               value="{{ p.id }}"
+                               {% if p.id in selected_ids %}checked{% endif %}>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- OPPONENT TEMP PLAYERS -->
+    <div class="col-md-6">
+        <div class="card shadow-sm p-3">
+            <h5>Opponent Temporary Players</h5>
+
+            <div id="opponent-box">
+                {% for opp in opponent_players %}
+                    <div class="d-flex gap-2 mb-2 opponent-row">
+                        <input class="form-control opp-name" value="{{ opp.name }}">
+                        <input class="form-control opp-role" value="{{ opp.role }}">
+                        <button class="btn btn-danger remove-opp">X</button>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <button class="btn btn-secondary mt-2" id="add-opp">+ Add Opponent Player</button>
+        </div>
+    </div>
+
+</div>
+
+<button class="btn btn-success btn-lg mt-4" id="save-squad">Save Squad Selection</button>
+
+<script src="/static/js/select_players.js"></script>
+
+{% endblock %}

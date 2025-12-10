@@ -1,0 +1,126 @@
+/* ----------------------------------------------------
+   GENERAL GLOBAL STYLE
+---------------------------------------------------- */
+body {
+    background: #f3f6fa;
+    font-family: 'Segoe UI', sans-serif;
+    color: #333;
+}
+
+/* Smooth transitions */
+* {
+    transition: 0.15s ease;
+}
+
+/* Page container spacing */
+.container {
+    margin-top: 25px;
+    margin-bottom: 40px;
+}
+
+/* ----------------------------------------------------
+   NAVBAR
+---------------------------------------------------- */
+.navbar-brand {
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.nav-link {
+    font-size: 1rem;
+}
+
+.nav-link:hover {
+    color: #09c !important;
+}
+
+/* ----------------------------------------------------
+   CARD UI
+---------------------------------------------------- */
+.card {
+    border-radius: 12px;
+    box-shadow: 0px 5px 15px rgba(0,0,0,0.06);
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0px 8px 20px rgba(0,0,0,0.1);
+}
+
+/* ----------------------------------------------------
+   BUTTONS
+---------------------------------------------------- */
+
+.btn-primary {
+    background-color: #006adf;
+    border: none;
+    padding: 8px 18px;
+}
+
+.btn-primary:hover {
+    background-color: #0055b5;
+}
+
+.btn-success {
+    background-color: #0a893c;
+    border: none;
+}
+
+.btn-success:hover {
+    background-color: #066a2d;
+}
+
+.btn-warning {
+    color: black;
+}
+
+.btn-outline-primary:hover {
+    background-color: #006adf;
+    color: white;
+}
+
+/* Back button */
+.btn-outline-secondary {
+    border-radius: 50px;
+    padding: 6px 15px;
+}
+
+/* ----------------------------------------------------
+   TABLE DESIGN
+---------------------------------------------------- */
+.table {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table thead {
+    background: #0d6efd;
+    color: white;
+}
+
+.table tbody tr:hover {
+    background: #f0f7ff;
+}
+
+/* ----------------------------------------------------
+   PROFILE PAGE
+---------------------------------------------------- */
+.list-group-item {
+    border: none;
+    border-bottom: 1px solid #eee;
+    padding: 12px 20px;
+    font-size: 1rem;
+}
+
+/* ----------------------------------------------------
+   FORMS
+---------------------------------------------------- */
+form .form-control, form .form-select {
+    padding: 10px;
+    border-radius: 6px;
+}
+
+form button {
+    margin-top: 10px;
+}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Match Summary – {{ match.title }}</h2>
+
+<div class="card shadow-sm p-4">
+
+    <h3>{{ match.team_name }} Innings</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Player</th>
+                <th>Runs</th>
+                <th>Balls</th>
+                <th>4s</th>
+                <th>6s</th>
+                <th>Out?</th>
+                <th>Wagon</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in batting %}
+            <tr>
+                <td>{{ row.player.user.username }}</td>
+                <td>{{ row.runs }}</td>
+                <td>{{ row.balls_faced }}</td>
+                <td>{{ row.fours }}</td>
+                <td>{{ row.sixes }}</td>
+                <td>{{ "Out" if row.is_out else "Not Out" }}</td>
+                <td>
+                    <a href="{{ url_for('wagon_wheel_player', match_id=match.id, player_id=row.player_id) }}"
+                       class="btn btn-sm btn-info">
+                        View
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h3>Bowling</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Bowler</th>
+                <th>Overs</th>
+                <th>Runs</th>
+                <th>Wickets</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in bowling %}
+            <tr>
+                <td>{{ row.player.user.username }}</td>
+                <td>{{ row.overs }}</td>
+                <td>{{ row.runs_conceded }}</td>
+                <td>{{ row.wickets }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

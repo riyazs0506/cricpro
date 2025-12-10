@@ -1,0 +1,20 @@
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Player</th>
+            <th>Catches</th>
+            <th>Drops</th>
+            <th>Saves</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for s in fielding %}
+        <tr>
+            <td>{{ s.player_name }}</td>
+            <td>{{ s.catches }}</td>
+            <td>{{ s.drops }}</td>
+            <td>{{ s.saves }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

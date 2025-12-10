@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Edit Profile</h2>
+
+<form method="POST">
+    {{ form.hidden_tag() }}
+
+    <div class="card shadow-sm p-4">
+
+        <div class="mb-3">
+            <label>Date of Birth</label>
+            {{ form.dob(class="form-control") }}
+        </div>
+
+        <div class="mb-3">
+            <label>Batting Style</label>
+            {{ form.batting_style(class="form-select") }}
+        </div>
+
+        <div class="mb-3">
+            <label>Bowling Style</label>
+            {{ form.bowling_style(class="form-select") }}
+        </div>
+
+        <div class="mb-3">
+            <label>Role in Team</label>
+            {{ form.role_in_team(class="form-select") }}
+        </div>
+
+        <div class="mb-3">
+            <label>Bio</label>
+            {{ form.bio(class="form-control", rows="3") }}
+        </div>
+
+        <button type="submit" class="btn btn-success">Save</button>
+
+    </div>
+</form>
+
+{% endblock %}

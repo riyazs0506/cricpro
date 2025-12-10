@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Advanced Wagon Stadium — {{ player.user.username }}{% endblock %}
+
+{% block content %}
+
+<a onclick="history.back()" class="btn btn-outline-primary mb-3">← Back</a>
+
+<h3 class="fw-bold">{{ player.user.username }} — 4-View Wagon Wheel Replay</h3>
+<p class="text-muted">{{ match.team_name }} vs {{ match.opponent_name }}</p>
+
+<style>
+#views_container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    margin-bottom: 20px;
+}
+
+/* Each camera box */
+.camView {
+    position: relative;
+    width: 100%;
+    height: 320px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #101010;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+}
+
+.camView canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.camLabel {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    padding: 4px 8px;
+    background: rgba(0,0,0,0.55);
+    color: white;
+    font-size: 13px;
+    border-radius: 6px;
+    backdrop-filter: blur(4px);
+}
+
+/* Wagon wheel */
+#wagonWheel {
+    width: 420px;
+    height: 420px;
+    border-radius: 50%;
+    background: radial-gradient(circle,#fdfdfd,#d6d6d6);
+    border: 5px solid #c9c9c9;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+}
+.wDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    position:absolute;
+}
+</style>
+
+<div id="views_container">
+
+    <!-- View 1: Broadcast Side (existing) -->
+    <div class="camView">
+        <div class="camLabel">🏟 SIDE VIEW (TV Broadcast)</div>
+        <canvas id="cam_side"></canvas>
+    </div>
+
+    <!-- View 2: Top Angle (stadium roof camera) -->
+    <div class="camView">
+        <div class="camLabel">📡 TOP CAMERA (Roof Shot)</div>
+        <canvas id="cam_top"></canvas>
+    </div>
+
+    <!-- View 3: Bowler View (camera behind bowler) -->
+    <div class="camView">
+        <div class="camLabel">🎥 FRONT VIEW (Bowler Camera)</div>
+        <canvas id="cam_front"></canvas>
+    </div>
+
+    <!-- View 4: Batsman POV -->
+    <div class="camView">
+        <div class="camLabel">👁 BATSMAN POV</div>
+        <canvas id="cam_bat"></canvas>
+    </div>
+
+</div>
+
+
+<!-- Wagon Wheel Below -->
+<div id="wagonWheel"></div>
+
+<!-- Shot Controls -->
+<div class="row mt-4">
+    <div class="col-md-4">
+        <label>Shot Type</label>
+        <select id="shot_type" class="form-control">
+            <option>Drive</option>
+            <option>Pull</option>
+            <option>Cut</option>
+            <option>Flick</option>
+            <option>Uppercut</option>
+            <option>Lofted</option>
+        </select>
+    </div>
+
+    <div class="col-md-4">
+        <label>Runs</label>
+        <select id="runs_box" class="form-control">
+            <option>0</option>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option selected>4</option>
+            <option>6</option>
+        </select>
+    </div>
+
+    <div class="col-md-4 d-flex align-items-end">
+        <button class="btn btn-success w-100" id="btn_example">Play Example Shot</button>
+    </div>
+</div>
+
+<h4 class="mt-4">Saved Shots</h4>
+<div id="shot_list"></div>
+
+<script>
+const matchId = {{ match.id }};
+const playerId = {{ player.id }};
+const shots = {{ shots | tojson }};
+</script>
+
+<script src="{{ url_for('static', filename='js/wagon_engine.js') }}"></script>
+
+{% endblock %}

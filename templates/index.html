@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8 text-center">
+    <h1 class="mt-4">Welcome to CricPro</h1>
+    <p class="lead">Manage players, coaches, matches and live scoring. Sign up as a player or coach to get started.</p>
+    <p>To maintain quality, players are approved by coaches before accessing the full platform.</p>
+    <div class="d-flex justify-content-center gap-2 mt-4">
+      <a class="btn btn-primary" href="{{ url_for('login') }}">Login</a>
+      <a class="btn btn-outline-primary" href="{{ url_for('register') }}">Register</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

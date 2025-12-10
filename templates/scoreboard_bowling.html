@@ -1,0 +1,20 @@
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Bowler</th>
+            <th>Overs</th>
+            <th>Runs</th>
+            <th>Wkts</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for s in bowling %}
+        <tr>
+            <td>{{ s.player_name }}</td>
+            <td>{{ s.overs }}</td>
+            <td>{{ s.runs_conceded }}</td>
+            <td>{{ s.wickets }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

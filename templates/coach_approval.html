@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Approve Match — {{ match.title }}{% endblock %}
+{% block content %}
+<a onclick="history.back()" class="btn btn-outline-primary mb-3">← Back</a>
+
+<h3>Approval — {{ match.title }}</h3>
+<p class="text-muted">Status: {{ match.status }}</p>
+
+<form method="POST">
+  <div class="card p-3 mb-3">
+    <h5>Manual Score Rows</h5>
+    <table class="table">
+      <thead><tr><th>Player</th><th>R</th><th>B</th><th>4s</th><th>6s</th><th>O</th><th>Runs Conceded</th><th>W</th></tr></thead>
+      <tbody>
+        {% for r in manual_rows %}
+        <tr>
+          <td>{% if r.player %}{{ r.player.user.username }}{% else %}Opponent: {{ r.opponent_name or '—' }}{% endif %}</td>
+          <td>{{ r.runs }}</td>
+          <td>{{ r.balls_faced }}</td>
+          <td>{{ r.fours }}</td>
+          <td>{{ r.sixes }}</td>
+          <td>{{ r.overs }}</td>
+          <td>{{ r.runs_conceded }}</td>
+          <td>{{ r.wickets }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card p-3 mb-3">
+    <h5>Wagon Wheels (preview)</h5>
+    {% for pid, shots in wheel_map.items() %}
+      <div class="mb-2">
+        <strong>Player ID: {{ pid }}</strong>
+        <a class="btn btn-sm btn-outline-info" href="{{ url_for('wagon_wheel_360', match_id=match.id, player_id=pid) }}">Open wheel</a>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="d-flex gap-2">
+    <button type="submit" name="action" value="approve" class="btn btn-success">Approve & Merge Stats</button>
+    <button type="submit" name="action" value="reject" class="btn btn-warning">Reject</button>
+  </div>
+</form>
+{% endblock %}

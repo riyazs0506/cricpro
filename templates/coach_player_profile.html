@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Player Profile{% endblock %}
+{% block content %}
+
+<div class="container py-4">
+
+    <h2 class="mb-4">Player Profile</h2>
+
+    <div class="card shadow p-4">
+        
+        <h3 class="text-primary">{{ player.user.username }}</h3>
+        <p class="text-muted"><strong>Email:</strong> {{ player.user.email }}</p>
+
+        <hr>
+
+        <!-- BASIC INFO -->
+        <h5>Player Information</h5>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <p><strong>Role:</strong> {{ player.role_in_team or "-" }}</p>
+                <p><strong>Batting Style:</strong> {{ player.batting_style or "-" }}</p>
+                <p><strong>Bowling Style:</strong> {{ player.bowling_style or "-" }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Wicket Keeper:</strong> {{ "Yes" if player.wicket_keeper else "No" }}</p>
+                <p><strong>Age:</strong> {{ player.age or "-" }}</p>
+                <p><strong>Batch:</strong> {{ player.batch.name if player.batch else "-" }}</p>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- BIO -->
+        <h5>Bio</h5>
+        <p class="text-muted">{{ player.bio or "No bio added yet." }}</p>
+
+        {% set s = player.playerstats %}
+
+<h4 class="text-secondary mt-4">Career Statistics</h4>
+
+<div class="row mt-4">
+
+    <!-- ================= BATTING ================= -->
+    <div class="col-md-4">
+        <h5 class="text-info">Batting Statistics</h5>
+        <table class="table table-bordered text-center">
+            <tr><th>Matches</th><td>{{ s.matches if s else 0 }}</td></tr>
+            <tr><th>Total Runs</th><td>{{ s.total_runs if s else 0 }}</td></tr>
+            <tr><th>Balls Faced</th><td>{{ s.total_balls if s else 0 }}</td></tr>
+            <tr><th>4s</th><td>{{ s.total_fours if s else 0 }}</td></tr>
+            <tr><th>6s</th><td>{{ s.total_sixes if s else 0 }}</td></tr>
+
+            <!-- Average -->
+            <tr>
+                <th>Average</th>
+                <td>
+                    {% if s and s.outs > 0 %}
+                        {{ "%.2f" % (s.total_runs / s.outs) }}
+                    {% else %}
+                        0.00
+                    {% endif %}
+                </td>
+            </tr>
+
+            <!-- Strike Rate -->
+            <tr>
+                <th>Strike Rate</th>
+                <td>
+                    {% if s and s.total_balls > 0 %}
+                        {{ "%.2f" % ((s.total_runs / s.total_balls) * 100) }}
+                    {% else %}
+                        0.00
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ================= BOWLING ================= -->
+    <div class="col-md-4">
+        <h5 class="text-info">Bowling Statistics</h5>
+        <table class="table table-bordered text-center">
+            <tr><th>Wickets</th><td>{{ s.wickets if s else 0 }}</td></tr>
+            <tr><th>Overs Bowled</th><td>{{ s.overs_bowled if s else 0 }}</td></tr>
+            <tr><th>Runs Conceded</th><td>{{ s.runs_conceded if s else 0 }}</td></tr>
+
+            <tr>
+                <th>Economy</th>
+                <td>
+                    {% if s and s.overs_bowled > 0 %}
+                        {{ "%.2f" % (s.runs_conceded / s.overs_bowled) }}
+                    {% else %}
+                        0.00
+                    {% endif %}
+                </td>
+            </tr>
+
+            <tr>
+                <th>Bowling Average</th>
+                <td>
+                    {% if s and s.wickets > 0 %}
+                        {{ "%.2f" % (s.runs_conceded / s.wickets) }}
+                    {% else %}
+                        0.00
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ================= FIELDING ================= -->
+    <div class="col-md-4">
+        <h5 class="text-info">Fielding Statistics</h5>
+        <table class="table table-bordered text-center">
+            <tr><th>Catches</th><td>{{ s.catches if s else 0 }}</td></tr>
+            <tr><th>Drops</th><td>{{ s.drops if s else 0 }}</td></tr>
+            <tr><th>Saves</th><td>{{ s.saves if s else 0 }}</td></tr>
+        </table>
+    </div>
+
+</div>
+
+        </div>
+
+        <a href="{{ url_for('coach_player_list') }}" class="btn btn-secondary mt-3">← Back</a>
+
+    </div>
+</div>
+
+{% endblock %}

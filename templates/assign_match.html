@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Assign Players to Match</h2>
+
+<form method="POST">
+    {% for user in players %}
+        <div>
+            <input type="checkbox" name="players" value="{{ user.id }}">
+            {{ user.username }}
+        </div>
+    {% endfor %}
+    <button class="btn btn-primary mt-3">Assign Players</button>
+</form>
+
+{% endblock %}

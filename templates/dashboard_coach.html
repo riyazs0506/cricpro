@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="mb-3">Coach Dashboard</h2>
+
+<div class="row">
+
+    <!-- LEFT SIDE: ACTIONS -->
+    <div class="col-md-4">
+        <div class="card shadow-sm p-3">
+            <h4>Actions</h4>
+
+            <a href="{{ url_for('coach_create_match') }}" class="btn btn-primary w-100 mt-2">
+                Create Live/Manual Match
+            </a>
+
+            <a href="{{ url_for('manual_match_create') }}" class="btn btn-outline-primary w-100 mt-2">
+                Create Manual-Only Match
+            </a>
+
+            <a href="{{ url_for('coach_player_list') }}" class="btn btn-secondary w-100 mt-2">
+                View Players
+            </a>
+
+            <a href="{{ url_for('match_list') }}" class="btn btn-dark w-100 mt-2">
+                All Matches
+            </a>
+        </div>
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div class="col-md-8">
+
+        <!-- ================== PENDING APPROVAL MATCHES (NEW) ================== -->
+        <div class="card shadow-sm p-3 mb-3">
+            <h4 class="text-danger">Pending Approval Matches</h4>
+
+            {% set pending = matches_pending %}
+            {% if pending %}
+                <ul class="list-group">
+                    {% for m in pending %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ m.title }}</strong><br>
+                                <small>{{ m.match_date }}</small><br>
+                                <span class="badge bg-warning text-dark">Pending Approval</span>
+                            </div>
+
+                            <a href="{{ url_for('match_detail', match_id=m.id) }}"
+                               class="btn btn-sm btn-danger">
+                                Review & Approve
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">No matches need approval.</p>
+            {% endif %}
+        </div>
+
+        <!-- ================== TODAY MATCHES ================== -->
+        <div class="card shadow-sm p-3 mb-3">
+            <h4>Today's Matches</h4>
+
+            {% if matches_today %}
+                <ul class="list-group">
+                    {% for m in matches_today %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ m.title }}</strong><br>
+                                <small>{{ m.match_date }}</small>
+                            </div>
+                            <a href="{{ url_for('match_detail', match_id=m.id) }}" class="btn btn-sm btn-primary">
+                                Open
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">No matches today.</p>
+            {% endif %}
+        </div>
+
+        <!-- ================== PENDING PLAYER APPROVAL ================== -->
+        <div class="card shadow-sm p-3">
+            <h4>Players Pending Approval</h4>
+
+            {% if pending_players %}
+                <ul class="list-group">
+                    {% for p in pending_players %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ p.user.username }}</span>
+                            <a href="{{ url_for('approve_player', id=p.id) }}"
+                               class="btn btn-success btn-sm">
+                                Approve
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">No pending players.</p>
+            {% endif %}
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

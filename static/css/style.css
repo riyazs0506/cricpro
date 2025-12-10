@@ -1,0 +1,257 @@
+/* style.css — Unified Professional Theme (FINAL CLEAN VERSION)
+   ✦ No alignment changed
+   ✦ No layout changed
+   ✦ No structural changes
+   ✦ Only formatting + consistency fixes
+*/
+
+/* --- base --- */
+:root {
+  --bg: #f2f4f7;
+  --card: #ffffff;
+  --muted: #6b7280;
+  --accent: #0d6efd;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --four-color: #f6c84c; /* 4s - yellow */
+  --six-color: #ef4444;  /* 6s - red */
+  --shot-color: #60a5fa; /* other shots */
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: var(--bg);
+  color: #111827;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* container / cards */
+.container {
+  max-width: 1150px;
+  margin: 18px auto;
+  padding: 0 16px;
+}
+
+.card,
+.card .card {
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+.card {
+  padding: 14px;
+  margin-bottom: 18px;
+}
+
+/* back button (global) */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid rgba(13, 110, 253, 0.12);
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-back:active {
+  transform: translateY(1px);
+}
+
+/* typography */
+h1, h2, h3, h4, h5 {
+  margin: 8px 0;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+p {
+  margin: 0 0 8px 0;
+  color: #374151;
+}
+
+/* forms */
+.form-control,
+.form-select {
+  border-radius: 8px;
+  padding: 8px 10px;
+  border: 1px solid #e6e9ef;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table th,
+.table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* buttons */
+.btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 0;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-success {
+  background: var(--success);
+  color: #fff;
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+.btn-outline-primary {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid rgba(13, 110, 253, 0.12);
+}
+
+/* scoreboard */
+.score-card {
+  background: var(--card);
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.03);
+}
+
+.score-num {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+/* commentary */
+.commentary-item {
+  padding: 8px 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* wagon wheel canvas styles */
+#wagonCanvas,
+#wagonWheel {
+  background: var(--card);
+  border-radius: 50%;
+  display: block;
+  margin: 0 auto;
+}
+
+/* quick buttons for scoring */
+.quick-grid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.quick-grid .btn {
+  min-width: 48px;
+  text-align: center;
+  padding: 10px 12px;
+}
+
+/* helpers */
+.text-muted {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.badge {
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+}
+
+/* responsive */
+@media (max-width: 900px) {
+  .container {
+    padding: 10px;
+  }
+  .score-num {
+    font-size: 1.8rem;
+  }
+}
+
+.batting-table input,
+.batting-table select {
+  padding: 6px 8px;
+  font-size: 15px;
+}
+
+.batting-table td {
+  vertical-align: middle !important;
+}
+
+.batting-table .form-control,
+.batting-table .form-select {
+  min-height: 38px;
+}
+
+.batting-table button {
+  padding: 6px 10px;
+}
+/* Improved batting table formatting */
+.batting-table input,
+.batting-table select {
+  height: 42px;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+/* Center numeric inputs */
+.batting-table input[type=number] {
+  text-align: center;
+}
+
+/* Slim remove button */
+.batting-table .btn-danger {
+  padding: 6px 10px;
+  font-size: 14px;
+}
+
+/* Dismissal dropdown wider */
+.batting-table .dismissal_type {
+  min-width: 150px;
+}
+.batting-row-details td {
+  padding-top: 8px !important;
+  background: #fafafa;
+}
+
+.score-input {
+  font-size: 1.1rem;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.player-id {
+  min-width: 180px;
+}
+
+.dismissal_type {
+  min-width: 180px;
+}
+

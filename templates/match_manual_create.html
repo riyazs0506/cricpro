@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <h2 class="fw-bold text-primary">Create Manual Match</h2>
+    <hr>
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.title.label(class="form-label") }}
+                {{ form.title(class="form-control") }}
+            </div>
+
+            <div class="col-md-3 mb-3">
+                {{ form.match_date.label(class="form-label") }}
+                {{ form.match_date(class="form-control") }}
+            </div>
+
+            <div class="col-md-3 mb-3">
+                {{ form.match_type.label(class="form-label") }}
+                {{ form.match_type(class="form-select") }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.team_name.label(class="form-label") }}
+                {{ form.team_name(class="form-control") }}
+            </div>
+
+            <div class="col-md-6 mb-3">
+                {{ form.opponent_name.label(class="form-label") }}
+                {{ form.opponent_name(class="form-control") }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                {{ form.venue.label(class="form-label") }}
+                {{ form.venue(class="form-control") }}
+            </div>
+
+            <div class="col-md-4 mb-3">
+                {{ form.scoring_mode.label(class="form-label") }}
+                {{ form.scoring_mode(class="form-select") }}
+            </div>
+
+            <div class="col-md-4 mb-3">
+                {{ form.toss_winner.label(class="form-label") }}
+                {{ form.toss_winner(class="form-select") }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                {{ form.toss_decision.label(class="form-label") }}
+                {{ form.toss_decision(class="form-select") }}
+            </div>
+
+            <div class="col-md-4 mb-3">
+                {{ form.scorer_type.label(class="form-label") }}
+                {{ form.scorer_type(class="form-select") }}
+            </div>
+
+            <div class="col-md-4 mb-3">
+                {{ form.scorer_player.label(class="form-label") }}
+                {{ form.scorer_player(class="form-select") }}
+            </div>
+        </div>
+
+        <button class="btn btn-primary mt-3 px-4">Create Match</button>
+    </form>
+</div>
+
+<script>
+    // AUTO UPDATE TOSS CHOICES BASED ON TEAM NAMES
+    const teamName = document.getElementById("team_name");
+    const opponentName = document.getElementById("opponent_name");
+    const tossWinner = document.getElementById("toss_winner");
+
+    function updateTossOptions() {
+        tossWinner.innerHTML = "";
+        const t1 = teamName.value || "Team A";
+        const t2 = opponentName.value || "Team B";
+
+        tossWinner.innerHTML += `<option value="${t1}">${t1}</option>`;
+        tossWinner.innerHTML += `<option value="${t2}">${t2}</option>`;
+    }
+
+    teamName.addEventListener("input", updateTossOptions);
+    opponentName.addEventListener("input", updateTossOptions);
+    updateTossOptions();
+</script>
+
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Live Scoring – {{ match.title }}</h2>
+
+<div class="card shadow-sm p-4">
+
+    <h5>Next Ball: Over {{ next_over }}, Ball {{ next_ball }}</h5>
+
+    <div class="row mt-3">
+        <div class="col-md-4">
+            <label>Striker</label>
+            <select id="striker" class="form-select">
+                {% for p in players %}
+                <option value="{{ p.user.username }}">{{ p.user.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label>Non-Striker</label>
+            <select id="non_striker" class="form-select">
+                {% for p in players %}
+                <option value="{{ p.user.username }}">{{ p.user.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label>Bowler</label>
+            <select id="bowler" class="form-select">
+                {% for p in players %}
+                <option value="{{ p.user.username }}">{{ p.user.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <hr>
+
+    <h5>Quick Scoring</h5>
+
+    <div class="btn-group mt-2" role="group">
+        <button class="btn btn-outline-primary run-btn" data-val="0">0</button>
+        <button class="btn btn-outline-primary run-btn" data-val="1">1</button>
+        <button class="btn btn-outline-primary run-btn" data-val="2">2</button>
+        <button class="btn btn-outline-primary run-btn" data-val="3">3</button>
+        <button class="btn btn-outline-success run-btn" data-val="4">4 (Boundary)</button>
+        <button class="btn btn-outline-danger run-btn" data-val="6">6 (Six)</button>
+    </div>
+
+    <hr>
+
+    <h5>Wicket</h5>
+    <select id="wicket_type" class="form-select">
+        <option value="none">No Wicket</option>
+        <option value="bowled">Bowled</option>
+        <option value="caught">Caught</option>
+        <option value="lbw">LBW</option>
+        <option value="runout">Run Out</option>
+        <option value="stumped">Stumped</option>
+        <option value="hitwicket">Hit Wicket</option>
+    </select>
+
+    <hr>
+
+    <h5>Commentary (Optional)</h5>
+    <textarea id="commentary" class="form-control" rows="2"></textarea>
+
+    <button class="btn btn-success btn-lg mt-3" id="submit-ball">Submit Ball</button>
+</div>
+
+<script src="/static/js/live_score.js"></script>
+
+{% endblock %}

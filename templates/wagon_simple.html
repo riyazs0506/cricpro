@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Wagon Wheel — {{ player.user.username }}{% endblock %}
+
+{% block content %}
+<h2>Wagon Wheel — {{ player.user.username }}</h2>
+
+<p>Click on the ground diagram to record a shot.</p>
+
+<div id="wagon-area"
+     style="width:400px;height:400px;border:1px solid #444;border-radius:50%;margin:auto;position:relative;">
+</div>
+
+<button onclick="window.history.back()" class="btn btn-secondary mt-3">Back</button>
+
+<script>
+const match_id = {{ match.id }};
+const player_id = {{ player.id }};
+
+// Click event to add a point
+document.getElementById("wagon-area").addEventListener("click", function(e) {
+    const box = this.getBoundingClientRect();
+    const x = e.clientX - box.left - box.width/2;
+    const y = e.clientY - box.top - box.height/2;
+
+    const angle = Math.atan2(y, x) * (180 / Math.PI);
+    const distance = Math.sqrt(x*x + y*y);
+
+    const runs = prompt("Runs for this shot (0/1/2/3/4/6):");
+    if (runs === null) return;
+
+    const shot_type = prompt("Shot type (cover-drive, pull, sweep, etc):");
+
+    fetch(`/api/wagon/${match_id}/${player_id}/add`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            angle: angle,
+            distance: distance,
+            runs: parseInt(runs),
+            shot_type: shot_type
+        })
+    })
+    .then(r => r.json())
+    .then(d => {
+        if (d.status === "ok") {
+            alert("Shot added!");
+        } else {
+            alert("Error: " + d.error);
+        }
+    });
+});
+</script>
+
+{% endblock %}

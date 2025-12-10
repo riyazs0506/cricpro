@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+{% include 'components/back_button.html' %}
+<h3>Leaderboard — Top Run Scorers</h3>
+<table class="table">
+  <thead><tr><th>Player</th><th>Runs</th></tr></thead>
+  <tbody>
+    {% for p in players_runs %}
+    <tr><td>{{ p.display_name }}</td><td>{{ p.total_runs }}</td></tr>
+    {% else %}
+    <tr><td colspan="2">No data</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Player Wagon Wheel{% endblock %}
+
+{% block content %}
+
+<a onclick="history.back()" class="btn btn-outline-primary mb-3">← Back</a>
+
+<h3 class="fw-bold">{{ player.name }} – Wagon Wheel</h3>
+<p class="text-muted">{{ match.team_name }} vs {{ match.opponent_name }}</p>
+
+<canvas id="wheel" width="350" height="350"
+        style="border:1px solid #ccc; border-radius:50%;"></canvas>
+
+<script>
+    let shots = {{ shots | tojson }};
+</script>
+
+<script src="{{ url_for('static', filename='js/wagon_wheel.js') }}"></script>
+
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h3>Players in {{ batch.name }}</h3>
+
+<table class="table">
+    <thead>
+        <tr><th>Name</th><th>Age</th><th>Profile</th></tr>
+    </thead>
+    <tbody>
+    {% for p in players %}
+        <tr>
+            <td>{{ p.user.display_name }}</td>
+            <td>{{ p.age }}</td>
+            <td>
+                <a href="{{ url_for('coach_player_profile', player_id=p.id) }}"
+                   class="btn btn-outline-primary btn-sm">Open</a>
+            </td>
+        </tr>
+    {% else %}
+        <tr><td colspan="3">No players in this batch</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ coach.user.display_name }} - Coach Profile</h2>
+<div class="card">
+  <div class="card-body">
+    <p><strong>Experience:</strong> {{ coach.experience_years }} years</p>
+    <p>{{ coach.bio or 'No bio yet.' }}</p>
+  </div>
+</div>
+{% endblock %}

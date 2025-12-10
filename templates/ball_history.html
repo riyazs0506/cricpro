@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Ball-by-Ball History – {{ match.title }}</h2>
+
+<div class="card shadow-sm p-4">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Over</th>
+                <th>Ball</th>
+                <th>Striker</th>
+                <th>Bowler</th>
+                <th>Runs</th>
+                <th>Extras</th>
+                <th>Wicket</th>
+                <th>Commentary</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in balls %}
+            <tr>
+                <td>{{ b.over_no }}</td>
+                <td>{{ b.ball_no }}</td>
+                <td>{{ b.striker }}</td>
+                <td>{{ b.bowler }}</td>
+                <td>{{ b.runs }}</td>
+                <td>{{ b.extras }}</td>
+                <td>{{ b.wicket }}</td>
+                <td>{{ b.commentary }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

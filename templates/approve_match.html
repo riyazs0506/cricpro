@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}Approve Match — {{ match.title }}{% endblock %}
+{% block content %}
+
+<div class="container mt-4">
+
+    <a onclick="history.back()" class="btn btn-outline-secondary mb-3">← Back</a>
+
+    <h2>Review & Approve Match</h2>
+    <h5 class="text-muted">{{ match.title }} — {{ match.match_date }}</h5>
+
+    <div class="alert alert-warning mt-3">
+        <strong>Status:</strong>
+        <span class="badge bg-warning text-dark">Pending Approval</span>
+    </div>
+
+    <!-- ================= MATCH SUMMARY ================= -->
+    <div class="card p-3 mb-4 shadow-sm">
+        <h5 class="mb-3">Match Summary</h5>
+
+        <p>
+            <strong>{{ match.team_name }}</strong> vs
+            <strong>{{ match.opponent_name }}</strong>
+        </p>
+
+        <table class="table table-bordered text-center">
+            <thead class="table-light">
+                <tr>
+                    <th>Team</th>
+                    <th>Runs</th>
+                    <th>Wickets</th>
+                    <th>Overs</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ match.team_name }}</td>
+                    <td>{{ match.team_runs }}</td>
+                    <td>{{ match.team_wkts }}</td>
+                    <td>{{ match.team_overs }}</td>
+                </tr>
+                <tr>
+                    <td>{{ match.opponent_name }}</td>
+                    <td>{{ match.opp_runs }}</td>
+                    <td>{{ match.opp_wkts }}</td>
+                    <td>{{ match.opp_overs }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ================= BATTING TABLE ================= -->
+    <div class="card p-3 mb-4 shadow-sm">
+        <h5>Batting Scorecard</h5>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Runs</th>
+                    <th>Balls</th>
+                    <th>4s</th>
+                    <th>6s</th>
+                    <th>Out</th>
+                    <th>Over</th>
+                    <th>Ball</th>
+                    <th>Dismissal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in batting %}
+                <tr>
+                    <td>{{ r.player.user.username }}</td>
+                    <td>{{ r.runs }}</td>
+                    <td>{{ r.balls_faced }}</td>
+                    <td>{{ r.fours }}</td>
+                    <td>{{ r.sixes }}</td>
+                    <td>{% if r.is_out %}Yes{% else %}No{% endif %}</td>
+                    <td>{{ r.wicket_over or "-" }}</td>
+                    <td>{{ r.wicket_ball or "-" }}</td>
+                    <td>{{ r.dismissal_type or "-" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ================= BOWLING TABLE ================= -->
+    <div class="card p-3 mb-4 shadow-sm">
+        <h5>Bowling Scorecard</h5>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Overs</th>
+                    <th>Runs</th>
+                    <th>Wickets</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in bowling %}
+                <tr>
+                    <td>{{ r.player.user.username }}</td>
+                    <td>{{ r.overs }}</td>
+                    <td>{{ r.runs_conceded }}</td>
+                    <td>{{ r.wickets }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ================= FIELDING TABLE ================= -->
+    <div class="card p-3 mb-4 shadow-sm">
+        <h5>Fielding Summary</h5>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Catches</th>
+                    <th>Drops</th>
+                    <th>Saves</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in fielding %}
+                <tr>
+                    <td>{{ r.player.user.username }}</td>
+                    <td>{{ r.catches }}</td>
+                    <td>{{ r.drops }}</td>
+                    <td>{{ r.saves }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ================= AI COACH ANALYSIS ================= -->
+    <div class="card p-3 mb-4 shadow-sm">
+        <h5>AI Coach Suggestions</h5>
+
+        {% if suggestions %}
+        <ul>
+            {% for s in suggestions %}
+            <li>{{ s }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted">No suggestions available.</p>
+        {% endif %}
+    </div>
+
+    <!-- ================= APPROVE BUTTON ================= -->
+    <div class="text-center mb-5">
+        <form action="{{ url_for('coach_approve_match', match_id=match.id) }}" method="POST">
+            <button class="btn btn-success btn-lg px-5 py-2">
+                ✔ Approve Match & Update Player Stats
+            </button>
+        </form>
+    </div>
+
+</div>
+
+{% endblock %}
