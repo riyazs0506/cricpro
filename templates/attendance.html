@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+/* ===== COMPACT PREMIUM SUMMARY ===== */
+.summary-card {
+  border-radius: 14px;
+  padding: 14px 10px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+}
+
+.summary-card h6 {
+  font-size: 0.75rem;
+  margin-bottom: 4px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.summary-card h4 {
+  font-size: 1.4rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+.bg-soft-success {
+  background: #eafaf1;
+  color: #0f5132;
+}
+
+.bg-soft-danger {
+  background: #fdecec;
+  color: #842029;
+}
+
+.bg-soft-warning {
+  background: #fff8e1;
+  color: #664d03;
+}
+
+.attendance-card {
+  border-radius: 18px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+}
+
+.status-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .summary-card h4 {
+    font-size: 1.2rem;
+  }
+}
+</style>
+
+<div class="container-fluid px-2 px-md-4">
+
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h4 class="fw-bold mb-0">📋 Attendance</h4>
+      <small class="text-muted">{{ today }}</small>
+    </div>
+    <a href="{{ url_for('attendance_summary') }}" class="btn btn-outline-secondary btn-sm">
+      Attendance Summary
+    </a>
+  </div>
+
+  <!-- ✅ COMPACT SUMMARY -->
+  <div class="row g-2 mb-3">
+    <div class="col-6 col-md-3">
+      <div class="summary-card bg-light">
+        <h6>Total</h6>
+        <h4>{{ players|length }}</h4>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="summary-card bg-soft-success">
+        <h6>Present</h6>
+        <h4 id="presentCount">0</h4>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="summary-card bg-soft-danger">
+        <h6>Absent</h6>
+        <h4 id="absentCount">0</h4>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="summary-card bg-soft-warning">
+        <h6>Edit Limit</h6>
+        <h4>2×</h4>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <form method="POST"
+        onsubmit="return confirm('Are you sure you want to save attendance for today?');">
+
+    <div class="attendance-card card border-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Player</th>
+              <th class="text-center">Attendance</th>
+              <th>Coach Note</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for p in players %}
+              {% set a = attendance_map.get(p.id) %}
+              <tr>
+                <td class="fw-semibold">
+                  {{ p.user.username }}
+                </td>
+
+                <!-- SWITCH -->
+                <td class="text-center">
+                  <div class="form-check form-switch d-flex justify-content-center">
+                    <input class="form-check-input attendance-switch"
+                           type="checkbox"
+                           name="player_{{ p.id }}"
+                           value="present"
+                           {% if a and a.status == "present" %}checked{% endif %}>
+                  </div>
+                  <div class="status-label {% if a and a.status == 'present' %}text-success{% else %}text-danger{% endif %}">
+                    {% if a and a.status == "present" %}Present{% else %}Absent{% endif %}
+                  </div>
+                </td>
+
+                <!-- NOTE -->
+                <td>
+                  <input type="text"
+                         name="note_{{ p.id }}"
+                         class="form-control form-control-sm"
+                         value="{{ a.improvement_note if a else '' }}"
+                         placeholder="footwork, fitness, focus">
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="d-flex flex-wrap gap-2 mt-3">
+      <button class="btn btn-success px-4 shadow-sm">
+        💾 Save
+      </button>
+      
+
+      <a href="{{ url_for('attendance_pdf') }}"
+         class="btn btn-outline-dark shadow-sm">
+        📄 PDF
+      </a>
+    </div>
+
+  </form>
+</div>
+
+<!-- JS : LIVE SUMMARY -->
+<script>
+function updateSummary() {
+  let present = 0;
+  let absent = 0;
+
+  document.querySelectorAll(".attendance-switch").forEach(sw => {
+    const label = sw.closest("td").querySelector(".status-label");
+    if (sw.checked) {
+      present++;
+      label.textContent = "Present";
+      label.className = "status-label text-success";
+    } else {
+      absent++;
+      label.textContent = "Absent";
+      label.className = "status-label text-danger";
+    }
+  });
+
+  document.getElementById("presentCount").innerText = present;
+  document.getElementById("absentCount").innerText = absent;
+}
+
+document.querySelectorAll(".attendance-switch").forEach(sw => {
+  sw.addEventListener("change", updateSummary);
+});
+
+updateSummary();
+</script>
+
+{% endblock %}

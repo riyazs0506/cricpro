@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <h3>🧠 Technical Work → Drill Suggestions</h3>
+
+    <form method="post">
+        <label>Select Issue</label>
+        <select name="issue" class="form-select mb-3">
+            {% for k in drill_map.keys() %}
+            <option value="{{ k }}">{{ k }}</option>
+            {% endfor %}
+        </select>
+
+        <button class="btn btn-primary">Suggest Drills</button>
+    </form>
+
+    {% if result %}
+    <hr>
+    <h5>Recommended Drills</h5>
+    <ul>
+        {% for d in result.drills %}
+        <li>{{ d }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+
+{% endblock %}

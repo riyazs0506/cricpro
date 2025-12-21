@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <h3>AI Coach Suggestions</h3>
+    <hr>
+
+    {% for s in suggestions %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5>{{ s.area }}</h5>
+            <p><strong>{{ s.recommendation }}</strong></p>
+
+            <ul>
+                {% for d in s.drills %}
+                <li>{{ d }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% if not suggestions %}
+        <p class="text-muted">No suggestions generated yet.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

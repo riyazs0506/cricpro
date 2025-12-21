@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h4>🥗 Nutrition Groups</h4>
+{% if current_user.role=="coach" %}
+<a href="{{ url_for('nutrition_group_create') }}" class="btn btn-success mb-3">
+➕ Create Group
+</a>
+{% endif %}
+<ul class="list-group">
+{% for g in groups %}
+<a class="list-group-item" href="{{ url_for('nutrition_group_view', group_id=g.id) }}">
+{{ g.name }}
+</a>
+{% endfor %}
+</ul>
+{% endblock %}

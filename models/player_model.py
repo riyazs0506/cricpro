@@ -204,3 +204,5 @@ class LiveBall(db.Model):
     extras = db.Column(db.String(20))
     wicket = db.Column(db.String(20))
     commentary = db.Column(db.Text)
+
+    

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial; }
+    h2 { text-align: center; }
+  </style>
+</head>
+<body>
+
+<h2>Pre-Match Squad Availability</h2>
+
+<p>
+Team: {{ availability.team_name }} <br>
+Date: {{ availability.match_date }} <br>
+Venue: {{ availability.venue }}
+</p>
+
+<hr>
+
+<h3>Available Players</h3>
+<ul>
+{% for p in available %}
+  <li>{{ p.username }}</li>
+{% endfor %}
+</ul>
+
+<h3>Not Available</h3>
+<ul>
+{% for p in not_available %}
+  <li>{{ p.username }}</li>
+{% endfor %}
+</ul>
+
+<h3>Later</h3>
+<ul>
+{% for p in later %}
+  <li>{{ p.username }}</li>
+{% endfor %}
+</ul>
+
+</body>
+</html>

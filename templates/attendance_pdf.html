@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      color: #333;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 5px;
+    }
+
+    .date {
+      text-align: center;
+      font-size: 11px;
+      margin-bottom: 15px;
+      color: #666;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid #999;
+      padding: 6px;
+      text-align: left;
+    }
+
+    th {
+      background: #f2f2f2;
+    }
+
+    .present {
+      color: green;
+      font-weight: bold;
+    }
+
+    .absent {
+      color: red;
+      font-weight: bold;
+    }
+
+    .summary {
+      margin-top: 15px;
+      font-size: 12px;
+    }
+
+    .summary span {
+      margin-right: 15px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Attendance Report</h2>
+  <div class="date">Date: {{ date }}</div>
+
+  <!-- SUMMARY -->
+  <div class="summary">
+    <span>Total: {{ total }}</span>
+    <span>Present: {{ present }}</span>
+    <span>Absent: {{ absent }}</span>
+  </div>
+
+  <!-- TABLE -->
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Player Name</th>
+        <th>Status</th>
+        <th>Coach Note</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in attendance %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ a.player.user.username }}</td>
+        <td class="{{ 'present' if a.status == 'present' else 'absent' }}">
+          {{ a.status|capitalize }}
+        </td>
+        <td>{{ a.improvement_note or '-' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</body>
+</html>

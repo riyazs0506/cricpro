@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h4 class="fw-bold mb-3">➕ Create Nutrition Group</h4>
+
+<form method="POST" class="card p-3 shadow-sm">
+
+  <label class="fw-semibold">Group Name</label>
+  <input type="text" name="name" class="form-control mb-3" required>
+
+  <label class="fw-semibold">Add Players</label>
+  {% for p in players %}
+    <div class="form-check">
+      <input class="form-check-input"
+             type="checkbox"
+             name="members"
+             value="{{ p.user_id }}">
+      <label class="form-check-label">
+        {{ p.user.username }}
+      </label>
+    </div>
+  {% endfor %}
+
+  <button class="btn btn-success mt-3">
+    Create Group
+  </button>
+
+</form>
+
+{% endblock %}

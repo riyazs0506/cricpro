@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h4>Chat with {{ other_user.username }}</h4>
+
+<div id="chat-box" class="chat-body">
+  {% for m in messages %}
+    {% if not m.is_deleted %}
+      <div class="msg {% if m.sender_id == current_user.id %}sent{% else %}recv{% endif %}">
+        {{ m.content }}
+        {% if m.sender_id == current_user.id %}
+          <span class="tick">
+            {% if m.is_read %}✔✔{% else %}✔{% endif %}
+          </span>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
+
+<form id="send-form">
+  <input type="text" id="msg" class="form-control" placeholder="Type message">
+  <button class="btn btn-primary mt-2">Send</button>
+</form>
+
+<script>
+document.getElementById("send-form").onsubmit = function(e){
+  e.preventDefault();
+  fetch("/chat/send", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      receiver_id: {{ other_user.id }},
+      content: document.getElementById("msg").value
+    })
+  }).then(()=>location.reload());
+}
+</script>
+
+{% endblock %}

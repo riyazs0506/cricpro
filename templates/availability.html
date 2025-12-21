@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <h3>🏏 Match Availability</h3>
+    <p><strong>{{ match.team_name }}</strong> vs <strong>{{ match.opponent_name }}</strong></p>
+
+    <form method="post">
+        <table class="table table-bordered">
+            <tr>
+                <th>Player</th>
+                <th>Response</th>
+            </tr>
+
+            {% for p in players %}
+            <tr>
+                <td>{{ p.user.username }}</td>
+                <td>
+                    <button name="resp_{{ p.id }}" value="yes" class="btn btn-success btn-sm">Available</button>
+                    <button name="resp_{{ p.id }}" value="no" class="btn btn-danger btn-sm">Not Available</button>
+                    <button name="resp_{{ p.id }}" value="later" class="btn btn-warning btn-sm">Later</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Create Match Availability</h3>
+
+<form method="POST">
+  <label>Select Match</label>
+  <select name="match_id" class="form-control mb-3" required>
+    {% for m in matches %}
+      <option value="{{ m.id }}">
+        {{ m.title }} | {{ m.match_date }} | {{ m.venue }}
+      </option>
+    {% endfor %}
+  </select>
+
+  <button class="btn btn-warning w-100">Create Availability</button>
+</form>
+{% endblock %}

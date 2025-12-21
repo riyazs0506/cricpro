@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+  <div class="card shadow-sm p-4">
+    <h4 class="mb-3">📋 Create Pre-Match Availability</h4>
+
+    <form method="POST">
+      <div class="mb-3">
+        <label class="form-label">Match Title</label>
+        <input type="text" name="title" class="form-control" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Match Date</label>
+        <input type="date" name="match_date" class="form-control" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Venue</label>
+        <input type="text" name="venue" class="form-control" required>
+      </div>
+
+      <button class="btn btn-warning w-100">
+        📢 Create & Notify Players
+      </button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

@@ -19,15 +19,21 @@
 
 <!-- GLOBAL NAVBAR -->
 <nav class="navbar navbar-dark bg-dark px-3">
-    <a class="navbar-brand" href="/">CricPro</a>
-    
-    {% if current_user.is_authenticated %}
-    <div class="d-flex gap-2">
-        <button class="btn btn-warning btn-sm" onclick="goBack()">⬅ Back</button>
-        <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Logout</a>
-    </div>
-    {% endif %}
+  <a class="navbar-brand fw-bold" href="/">🏏 CricPro</a>
+
+  {% if current_user.is_authenticated %}
+  <div class="d-flex gap-3 align-items-center">
+
+    <a class="nav-link text-white" href="{{ url_for('diet_plans') }}">🥗 Diet</a>
+    <a class="nav-link text-white" href="{{ url_for('fitness_plans') }}">💪 Fitness</a>
+    <a class="nav-link text-white" href="{{ url_for('cricket_skills') }}">🏏 Skills</a>
+    <button class="btn btn-warning btn-sm" onclick="goBack()">⬅ Back</button>
+
+    <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Logout</a>
+  </div>
+  {% endif %}
 </nav>
+
 
 <div class="container mt-4">
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -47,6 +53,15 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+const socket = io();
+
+socket.on("receive_message", () => {
+    location.reload();
+});
+</script>
+
 
 </body>
 </html>

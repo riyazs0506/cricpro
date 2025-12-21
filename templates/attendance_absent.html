@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3 class="mb-3">Absent Players — {{ date }}</h3>
+
+<div class="card p-3">
+    {% if records %}
+        <ul class="list-group">
+            {% for a in records %}
+                <li class="list-group-item">
+                    {{ a.player.user.username }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted">No absent players.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

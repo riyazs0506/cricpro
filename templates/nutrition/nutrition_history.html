@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h4 class="fw-bold mb-3">📅 Nutrition History</h4>
+
+<div class="card shadow-sm p-3">
+  <table class="table table-bordered">
+    <thead class="table-light">
+      <tr>
+        <th>Date</th>
+        <th>Calories</th>
+        <th>Protein</th>
+        <th>Carbs</th>
+        <th>Fat</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in logs %}
+      <tr>
+        <td>{{ l.log_date }}</td>
+        <td>{{ l.total_calories }}</td>
+        <td>{{ l.total_protein }}</td>
+        <td>{{ l.total_carbs }}</td>
+        <td>{{ l.total_fat }}</td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="5" class="text-muted text-center">
+          No records found
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

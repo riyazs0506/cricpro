@@ -1,257 +1,328 @@
-/* style.css — Unified Professional Theme (FINAL CLEAN VERSION)
-   ✦ No alignment changed
-   ✦ No layout changed
-   ✦ No structural changes
-   ✦ Only formatting + consistency fixes
-*/
+/* =====================================================
+   CRICPRO — PROFESSIONAL RESPONSIVE UI (FINAL)
+   Desktop + Mobile | Clean | Powerful
+===================================================== */
 
-/* --- base --- */
+/* ---------- ROOT VARIABLES ---------- */
 :root {
-  --bg: #f2f4f7;
+  --bg: #f4f6fb;
   --card: #ffffff;
+  --text: #0f172a;
   --muted: #6b7280;
-  --accent: #0d6efd;
+
+  --primary: #2563eb;
   --success: #16a34a;
   --danger: #dc2626;
-  --four-color: #f6c84c; /* 4s - yellow */
-  --six-color: #ef4444;  /* 6s - red */
-  --shot-color: #60a5fa; /* other shots */
+  --warning: #f59e0b;
+
+  --radius: 14px;
+  --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+}
+
+/* ---------- RESET ---------- */
+* {
+  box-sizing: border-box;
 }
 
 html, body {
-  height: 100%;
   margin: 0;
   padding: 0;
-  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg);
-  color: #111827;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  color: var(--text);
+  line-height: 1.6;
 }
 
-/* container / cards */
+/* ---------- CONTAINER ---------- */
 .container {
-  max-width: 1150px;
-  margin: 18px auto;
-  padding: 0 16px;
+  max-width: 1200px;
+  margin: auto;
+  padding: 16px;
 }
 
-.card,
-.card .card {
-  background: var(--card);
-  border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+/* ---------- HEADINGS ---------- */
+h1, h2, h3, h4, h5 {
+  font-weight: 700;
+  margin-bottom: 10px;
 }
 
+h2 {
+  font-size: 1.8rem;
+}
+
+/* ---------- CARDS ---------- */
 .card {
-  padding: 14px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
   margin-bottom: 18px;
 }
 
-/* back button (global) */
-.btn-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: transparent;
-  color: var(--accent);
-  border: 1px solid rgba(13, 110, 253, 0.12);
-  padding: 8px 12px;
-  border-radius: 8px;
+/* ---------- BUTTONS ---------- */
+.btn {
+  display: inline-block;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  font-weight: 600;
+  text-align: center;
   cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+}
+
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-success { background: var(--success); color: #fff; }
+.btn-danger  { background: var(--danger);  color: #fff; }
+.btn-warning { background: var(--warning); color: #fff; }
+
+.btn-outline-primary {
+  background: transparent;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+}
+
+/* ---------- LINKS ---------- */
+a {
   text-decoration: none;
+  color: var(--primary);
+  font-weight: 600;
 }
 
-.btn-back:active {
-  transform: translateY(1px);
+/* ---------- GRID (DASHBOARD AUTO) ---------- */
+.row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-/* typography */
-h1, h2, h3, h4, h5 {
-  margin: 8px 0;
+.col-md-4 {
+  flex: 1 1 320px;
+}
+
+.col-md-8 {
+  flex: 2 1 600px;
+}
+
+/* ---------- LIST GROUP ---------- */
+.list-group {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.list-group-item {
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ---------- BADGES ---------- */
+.badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
   font-weight: 700;
-  color: #0f172a;
 }
 
-p {
-  margin: 0 0 8px 0;
-  color: #374151;
-}
+.bg-warning { background: #fde68a; color: #92400e; }
+.bg-success { background: #bbf7d0; color: #065f46; }
+.bg-danger  { background: #fecaca; color: #7f1d1d; }
 
-/* forms */
-.form-control,
-.form-select {
-  border-radius: 8px;
-  padding: 8px 10px;
-  border: 1px solid #e6e9ef;
-}
-
+/* ---------- TABLES ---------- */
 .table {
   width: 100%;
   border-collapse: collapse;
-  background: var(--card);
-  border-radius: 8px;
-  overflow: hidden;
+  margin-top: 10px;
 }
 
 .table th,
 .table td {
-  padding: 8px 10px;
-  border-bottom: 1px solid #f1f5f9;
+  padding: 10px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
 }
 
-/* buttons */
-.btn {
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 0;
-  cursor: pointer;
-  display: inline-block;
+/* ---------- FORMS ---------- */
+.form-control,
+.form-select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  font-size: 0.95rem;
 }
 
-.btn-primary {
-  background: var(--accent);
-  color: #fff;
-}
-
-.btn-success {
-  background: var(--success);
-  color: #fff;
-}
-
-.btn-danger {
-  background: var(--danger);
-  color: #fff;
-}
-
-.btn-outline-primary {
-  background: transparent;
-  color: var(--accent);
-  border: 1px solid rgba(13, 110, 253, 0.12);
-}
-
-/* scoreboard */
-.score-card {
-  background: var(--card);
-  padding: 12px;
+/* ---------- DASHBOARD STATS ---------- */
+.dashboard-stat {
+  text-align: center;
+  padding: 14px;
   border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.03);
+  background: #f8fafc;
 }
 
+.dashboard-stat h3 {
+  font-size: 2rem;
+  margin: 0;
+}
+
+.dashboard-stat p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+/* ---------- CHAT ---------- */
+.chat-container {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-header {
+  padding: 14px;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+}
+
+.chat-body {
+  flex: 1;
+  padding: 14px;
+  overflow-y: auto;
+}
+
+.msg {
+  max-width: 70%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  margin-bottom: 8px;
+}
+
+.sent {
+  background: #dcfce7;
+  margin-left: auto;
+}
+
+.recv {
+  background: #e5e7eb;
+}
+
+/* ---------- SCORE / WAGON ---------- */
 .score-num {
   font-size: 2.2rem;
   font-weight: 800;
-  color: var(--accent);
+  color: var(--primary);
 }
 
-/* commentary */
-.commentary-item {
-  padding: 8px 10px;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-/* wagon wheel canvas styles */
 #wagonCanvas,
 #wagonWheel {
-  background: var(--card);
+  background: #fff;
   border-radius: 50%;
+  margin: auto;
   display: block;
-  margin: 0 auto;
 }
 
-/* quick buttons for scoring */
-.quick-grid {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
+/* =====================================================
+   📱 MOBILE RESPONSIVE
+===================================================== */
+@media (max-width: 768px) {
 
-.quick-grid .btn {
-  min-width: 48px;
-  text-align: center;
-  padding: 10px 12px;
-}
-
-/* helpers */
-.text-muted {
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
-.badge {
-  padding: 6px 10px;
-  border-radius: 10px;
-  font-size: 0.8rem;
-}
-
-/* responsive */
-@media (max-width: 900px) {
-  .container {
-    padding: 10px;
+  h2 {
+    font-size: 1.4rem;
   }
-  .score-num {
-    font-size: 1.8rem;
+
+  .row {
+    flex-direction: column;
+  }
+
+  .col-md-4,
+  .col-md-8 {
+    flex: 1 1 100%;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .list-group-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .dashboard-stat h3 {
+    font-size: 1.6rem;
+  }
+
+  .chat-container {
+    height: 85vh;
   }
 }
 
-.batting-table input,
-.batting-table select {
-  padding: 6px 8px;
-  font-size: 15px;
+
+.chat-list a {
+    border-radius: 10px;
+    margin-bottom: 6px;
 }
 
-.batting-table td {
-  vertical-align: middle !important;
+.chat-list a:hover {
+    background: #f1f5ff;
 }
 
-.batting-table .form-control,
-.batting-table .form-select {
-  min-height: 38px;
+.chat-list a {
+    border-radius: 10px;
+    margin-bottom: 6px;
 }
 
-.batting-table button {
-  padding: 6px 10px;
-}
-/* Improved batting table formatting */
-.batting-table input,
-.batting-table select {
-  height: 42px;
-  font-size: 16px;
-  border-radius: 8px;
+.chat-list a:hover {
+    background-color: #f5f7fb;
 }
 
-/* Center numeric inputs */
-.batting-table input[type=number] {
-  text-align: center;
+/* ===== FIX INPUT NOT CLICKABLE ISSUE ===== */
+
+.nutrition-input {
+  pointer-events: auto !important;
+  z-index: 10;
+  position: relative;
 }
 
-/* Slim remove button */
-.batting-table .btn-danger {
-  padding: 6px 10px;
-  font-size: 14px;
+table, td, th {
+  pointer-events: auto !important;
 }
 
-/* Dismissal dropdown wider */
-.batting-table .dismissal_type {
-  min-width: 150px;
-}
-.batting-row-details td {
-  padding-top: 8px !important;
-  background: #fafafa;
+.table-responsive {
+  overflow-x: auto;
+  pointer-events: auto !important;
 }
 
-.score-input {
-  font-size: 1.1rem;
-  padding: 10px;
-  border-radius: 8px;
-  text-align: center;
+/* ===== FIX INPUT CLICK ISSUE ===== */
+input,
+select,
+textarea,
+button {
+    pointer-events: auto !important;
 }
 
-.player-id {
-  min-width: 180px;
+.table-responsive,
+.card,
+.container,
+form {
+    pointer-events: auto !important;
 }
 
-.dismissal_type {
-  min-width: 180px;
+.table-responsive * {
+    pointer-events: auto !important;
 }
-

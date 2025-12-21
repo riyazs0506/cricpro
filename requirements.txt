@@ -8,3 +8,5 @@ gunicorn==21.2.0
 email_validator==2.1.0
 reportlab==4.0.8
 Werkzeug==2.3.8
+flask-socketio
+eventlet

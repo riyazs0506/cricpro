@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h4>Create Group</h4>
+
+<form method="POST">
+    <div class="mb-3">
+        <label>Group Name</label>
+        <input name="name" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+        <label>Add Members</label>
+        {% for u in users %}
+            <div>
+                <input type="checkbox" name="members" value="{{ u.id }}">
+                {{ u.username }} ({{ u.role }})
+            </div>
+        {% endfor %}
+    </div>
+
+    <button class="btn btn-primary">Create Group</button>
+</form>
+
+{% endblock %}

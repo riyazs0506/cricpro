@@ -251,3 +251,42 @@ class PlayerStats(db.Model):
     saves = db.Column(db.Integer, default=0)
 
     player = db.relationship("Player", back_populates="playerstats")
+
+
+
+class Attendance(db.Model):
+    __tablename__ = "attendance"
+
+    id = db.Column(db.Integer, primary_key=True)
+    player_id = db.Column(db.Integer, db.ForeignKey("players.id"), nullable=False)
+    date = db.Column(db.Date, default=date.today)
+    status = db.Column(db.String(20))  # present / absent
+    improvement_note = db.Column(db.Text)
+
+    player = db.relationship("Player", backref="attendance_records")
+
+
+class PlayerAvailability(db.Model):
+    __tablename__ = "player_availability"
+
+    id = db.Column(db.Integer, primary_key=True)
+    match_id = db.Column(db.Integer, db.ForeignKey("matches.id"))
+    player_id = db.Column(db.Integer, db.ForeignKey("players.id"))
+    status = db.Column(db.String(20))  # available / not_available / later
+    created_at = db.Column(db.DateTime, default=db.func.now())
+
+    player = db.relationship("Player")
+    match = db.relationship("Match")
+
+
+class Notification(db.Model):
+    __tablename__ = "notifications"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    message = db.Column(db.Text)
+    category = db.Column(db.String(50))
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=db.func.now())
+
+    user = db.relationship("User")

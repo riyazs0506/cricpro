@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>{{ match.title }} – Availability</h3>
+
+<table class="table table-bordered mt-3">
+<tr><th>Player</th><th>Status</th><th>Updated</th></tr>
+{% for r in records %}
+<tr>
+  <td>{{ r.username }}</td>
+  <td>{{ r.status }}</td>
+  <td>{{ r.updated_at }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<a href="{{ url_for('availability_pdf', match_id=match.id) }}"
+   class="btn btn-primary w-100 mt-3">
+   Download PDF
+</a>
+{% endblock %}

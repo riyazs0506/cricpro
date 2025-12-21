@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <h3>Notifications</h3>
+
+    {% for n in notifications %}
+        <div class="alert {{ 'alert-secondary' if n.is_read else 'alert-info' }}">
+            <strong>{{ n.title }}</strong><br>
+            {{ n.message }}
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

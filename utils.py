@@ -12,7 +12,6 @@ def calculate_age(dob):
     today = date.today()
     return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
 
-
 # ----------------------------------------------------
 # ASSIGN BATCH BASED ON AGE RANGE
 # ----------------------------------------------------

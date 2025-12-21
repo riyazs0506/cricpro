@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container">
+  <h4 class="mb-3">Pre-Match Availability Overview</h4>
+
+  <div class="row text-center mb-4">
+    <div class="col">✅ Available<br><b>{{ counts.available }}</b></div>
+    <div class="col">❌ Not Available<br><b>{{ counts.not_available }}</b></div>
+    <div class="col">⏳ Later<br><b>{{ counts.later }}</b></div>
+  </div>
+
+  <div class="card shadow-sm p-3 mb-3">
+    <h5>Available Players</h5>
+    <ul class="list-group">
+      {% for p in available %}
+        <li class="list-group-item">{{ p.username }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="card shadow-sm p-3 mb-3">
+    <h5>Not Available</h5>
+    <ul class="list-group">
+      {% for p in not_available %}
+        <li class="list-group-item">{{ p.username }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="card shadow-sm p-3 mb-3">
+    <h5>Later</h5>
+    <ul class="list-group">
+      {% for p in later %}
+        <li class="list-group-item">{{ p.username }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <a href="{{ url_for('pre_match_pdf', availability_id=availability.id) }}"
+     class="btn btn-dark w-100">
+    📄 Download Pre-Squad PDF
+  </a>
+</div>
+
+{% endblock %}

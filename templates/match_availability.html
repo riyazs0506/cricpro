@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>{{ match.title }}</h3>
+<p>{{ match.match_date }} | {{ match.venue }}</p>
+
+<form method="POST">
+  <button name="status" value="available" class="btn btn-success w-100 mb-2">
+    ✅ Available
+  </button>
+  <button name="status" value="not_available" class="btn btn-danger w-100 mb-2">
+    ❌ Not Available
+  </button>
+  <button name="status" value="later" class="btn btn-warning w-100">
+    ⏳ Later ({{ availability.later_count }}/3)
+  </button>
+</form>
+{% endblock %}

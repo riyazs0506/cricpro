@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+
+<div class="chat-container">
+    <div class="chat-header">
+        {{ other.username }}
+    </div>
+
+    <div class="chat-body" id="chatBox">
+  {% for m in messages %}
+    <div class="msg {% if m.sender_id == current_user.id %}sent{% else %}recv{% endif %}">
+      {{ m.content }}
+      <span class="tick">
+        {% if m.is_read %}✔✔{% elif m.delivered %}✔{% endif %}
+      </span>
+    </div>
+  {% endfor %}
+</div>
+
+
+    <form id="chatForm">
+        <input type="hidden" name="receiver_id" value="{{ other.id }}">
+        <input type="text" name="content" placeholder="Type message..." required>
+        <button class="btn btn-primary">Send</button>
+    </form>
+</div>
+
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+
+{% endblock %}

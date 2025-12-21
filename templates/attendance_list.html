@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3 class="mb-3">{{ title }}</h3>
+
+<div class="card shadow-sm p-3">
+    {% if records %}
+        <ul class="list-group">
+            {% for a in records %}
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>{{ a.player.user.username }}</span>
+                    <span class="badge bg-secondary">{{ a.status }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted">No records found.</p>
+    {% endif %}
+</div>
+
+<a href="{{ url_for('dashboard_coach') }}" class="btn btn-outline-secondary mt-3">
+    ← Back to Dashboard
+</a>
+
+{% endblock %}
