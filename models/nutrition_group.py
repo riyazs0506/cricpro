@@ -9,8 +9,4 @@ class NutritionGroup(db.Model):
     created_by = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    members = db.relationship(
-        "NutritionGroupMember",
-        backref="group",
-        cascade="all, delete-orphan"
-    )
+

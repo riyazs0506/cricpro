@@ -29,7 +29,7 @@ from models import (
     ManualScore, WagonWheel, LiveBall,
     PlayerStats, BattingStats, BowlingStats, FieldingStats,
     Attendance,
-    Notification, Message, ChatGroup, ChatGroupMember, PreMatchResponse, PreMatchAvailability,NutritionGroupMember
+    Notification, Message, ChatGroup, ChatGroupMember, PreMatchResponse, PreMatchAvailability,NutritionGroupMember,MatchPayment
 )
 
 # -------------------- DRILL MAP --------------------
@@ -46,6 +46,18 @@ from forms import (
     RegisterForm, LoginForm, PlayerProfileForm,
     MatchCreateForm, ManualMatchForm
 )
+
+#payment
+import razorpay
+
+razorpay_client = razorpay.Client(
+    auth=(
+        os.getenv("RAZORPAY_KEY_ID"),
+        os.getenv("RAZORPAY_KEY_SECRET")
+    )
+)
+
+
 
 # -------------------- PDF --------------------
 from reportlab.lib.pagesizes import A4
@@ -383,25 +395,37 @@ def dashboard_coach():
     # NOTIFICATIONS (UNCHANGED)
     # -------------------------
     notifications = Notification.query.filter(
-        Notification.user_id == current_user.id,
-        Notification.is_read == False
+    Notification.user_id == current_user.id,
+    Notification.is_read == False,
+    Notification.created_at >= (datetime.utcnow() - timedelta(minutes=10))
     ).order_by(Notification.created_at.desc()).all()
 
+    # -------------------------
+    # PAYMENT SUMMARY (NEW)
+    # -------------------------
+    payments = MatchPayment.query.order_by(
+        MatchPayment.created_at.desc()
+    ).all()
+
+    paid_count = sum(1 for p in payments if p.status == "paid")
+    pending_count = sum(1 for p in payments if p.status != "paid")
+
     return render_template(
-        "dashboard_coach.html",
-        attendance_present=attendance_present,
-        attendance_absent=attendance_absent,
-        pending_players=pending_players,
-        players=players,
-        live_matches=live_matches,
-        manual_matches=manual_matches,
-        pending_matches=pending_matches,
+    "dashboard_coach.html",
+    attendance_present=attendance_present,
+    attendance_absent=attendance_absent,
+    pending_players=pending_players,
+    players=players,
+    live_matches=live_matches,
+    manual_matches=manual_matches,
+    pending_matches=pending_matches,
+    latest_pre_match_session=latest_pre_match_session,
+    notifications=notifications,
 
-        # 👇 ONLY ONE SESSION
-        latest_pre_match_session=latest_pre_match_session,
-
-        notifications=notifications
-    )
+    # ✅ PAYMENT CONTEXT
+    paid_count=paid_count,
+    pending_count=pending_count
+)
 
 @app.route("/coach/pre-match")
 @login_required
@@ -596,9 +620,18 @@ def dashboard_player():
     ).first()
 
     notifications = Notification.query.filter(
-        Notification.user_id == current_user.id,
-        Notification.is_read == False
+    Notification.user_id == current_user.id,
+    Notification.is_read == False,
+    Notification.created_at >= (datetime.utcnow() - timedelta(minutes=10))
     ).order_by(Notification.created_at.desc()).all()
+
+    # -------------------------
+    # PAYMENT STATUS (NEW)
+    # -------------------------
+    pending_payment = MatchPayment.query.filter_by(
+    user_id=current_user.id,
+    payment_status="pending"
+    ).first()
 
     unread_messages = Message.query.filter_by(
         receiver_id=current_user.id,
@@ -606,12 +639,13 @@ def dashboard_player():
     ).count()
 
     return render_template(
-        "dashboard_player.html",
-        player=player,
-        upcoming_matches=upcoming_matches,
-        attendance_today=attendance_today,
-        notifications=notifications,
-        unread_messages=unread_messages
+    "dashboard_player.html",
+    player=player,
+    upcoming_matches=upcoming_matches,
+    attendance_today=attendance_today,
+    notifications=notifications,
+    unread_messages=unread_messages,
+    pending_payment=pending_payment   # ✅ NEW
     )
 
 @app.route("/notification/<int:notification_id>")
@@ -2150,6 +2184,7 @@ def chat_group(group_id):
     )
 
 #----------------------------------------------
+
 @app.route("/pre-match/create", methods=["GET", "POST"])
 @login_required
 def pre_match_create():
@@ -2158,27 +2193,34 @@ def pre_match_create():
 
     if request.method == "POST":
         availability = PreMatchAvailability(
-            session_id=int(datetime.utcnow().timestamp()),
+            session_id=int(datetime.utcnow().timestamp()),  # unique session
             title=request.form["title"],
             match_date=request.form["match_date"],
             venue=request.form["venue"],
+            amount=float(request.form["amount"]),  # ✅ MATCH FEE
             user_id=current_user.id
         )
         db.session.add(availability)
         db.session.commit()
 
-        # Notify players + coaches
+        # 🔔 Notify players + coaches (availability only, payment later)
         users = User.query.filter(User.role.in_(["player", "coach"])).all()
         for u in users:
             db.session.add(Notification(
                 user_id=u.id,
-                message=f"Pre-Match Availability: {availability.title}",
-                link=url_for("respond_availability", availability_id=availability.id)
+                message=f"📢 Pre-Match Availability: {availability.title}",
+                link=url_for(
+                    "respond_availability",
+                    availability_id=availability.id
+                )
             ))
+
         db.session.commit()
 
-        flash("Pre-match availability created", "success")
-        return redirect(url_for("availability_summary", availability_id=availability.id))
+        flash("Pre-match availability created successfully", "success")
+        return redirect(
+            url_for("availability_summary", availability_id=availability.id)
+        )
 
     return render_template("pre_match_create.html")
 
@@ -2235,8 +2277,7 @@ def respond_availability(availability_id):
         response=response
     )
 
-
-@app.route("/availability/<int:availability_id>/summary")
+@app.route("/availability/<int:availability_id>/summary", methods=["GET", "POST"])
 @login_required
 def availability_summary(availability_id):
     if current_user.role != "coach":
@@ -2244,7 +2285,9 @@ def availability_summary(availability_id):
 
     availability = PreMatchAvailability.query.get_or_404(availability_id)
 
+    # Fetch responses
     responses = db.session.query(
+        User.id,
         User.username,
         PreMatchResponse.status
     ).join(
@@ -2253,12 +2296,32 @@ def availability_summary(availability_id):
         PreMatchResponse.availability_id == availability_id
     ).all()
 
+    # -------------------------
+    # FINISH & ENABLE PAYMENT
+    # -------------------------
+    if request.method == "POST":
+        availability.is_finalized = True
+        db.session.commit()
+
+        # 🔔 Notify ONLY AVAILABLE PLAYERS
+        for r in responses:
+            if r.status == "available":
+                db.session.add(Notification(
+                    user_id=r.id,
+                    message=f"💰 Match fee ₹{availability.amount} enabled. Please pay now.",
+                    link=url_for("payment_page", availability_id=availability.id)
+                ))
+
+        db.session.commit()
+
+        flash("Squad finalized & payment enabled", "success")
+        return redirect(url_for("dashboard_coach"))
+
     return render_template(
         "availability_summary.html",
         availability=availability,
         responses=responses
     )
-
 
 
 @app.route("/availability/<int:availability_id>/pdf")
@@ -2370,7 +2433,7 @@ def chat_send():
 
     return jsonify({"status": "sent"})
 
-
+#nutition
 
 from models import (
     NutritionGroup,
@@ -2379,8 +2442,10 @@ from models import (
     NutritionLog,
     NutritionLogItem
 )
-from datetime import date
 
+from datetime import date
+from flask import render_template, request, redirect, url_for, flash, abort
+from flask_login import login_required, current_user
 
 # =========================
 # NUTRITION HOME
@@ -2392,9 +2457,8 @@ def nutrition_home():
     return render_template("nutrition/nutrition_home.html", groups=groups)
 
 
-
 # =========================
-# CREATE GROUP (COACH)
+# CREATE GROUP (COACH ONLY)
 # =========================
 @app.route("/nutrition/group/create", methods=["GET", "POST"])
 @login_required
@@ -2406,15 +2470,21 @@ def nutrition_group_create():
 
     if request.method == "POST":
         name = request.form["name"]
-        selected_players = request.form.getlist("players")
+        members = request.form.getlist("members")
 
-        group = NutritionGroup(name=name, created_by=current_user.id)
+        group = NutritionGroup(
+            name=name,
+            created_by=current_user.id
+        )
         db.session.add(group)
         db.session.flush()
 
-        for uid in selected_players:
+        for uid in members:
             db.session.add(
-                NutritionGroupMember(group_id=group.id, user_id=uid)
+                NutritionGroupMember(
+                    group_id=group.id,
+                    user_id=int(uid)
+                )
             )
 
         db.session.commit()
@@ -2429,22 +2499,15 @@ def nutrition_group_create():
 
 # =========================
 # VIEW GROUP
-
+# =========================
 @app.route("/nutrition/group/<int:group_id>")
 @login_required
 def nutrition_group_view(group_id):
     group = NutritionGroup.query.get_or_404(group_id)
 
-    logs = (
-        db.session.query(
-            NutritionLog,
-            User.username
-        )
-        .join(User, User.id == NutritionLog.user_id)
-        .filter(NutritionLog.group_id == group.id)
-        .order_by(NutritionLog.log_date.desc())
-        .all()
-    )
+    logs = NutritionLog.query.filter_by(
+        group_id=group.id
+    ).order_by(NutritionLog.created_at.desc()).all()
 
     return render_template(
         "nutrition/nutrition_group_view.html",
@@ -2452,11 +2515,10 @@ def nutrition_group_view(group_id):
         logs=logs
     )
 
+
 # =========================
 # CALCULATOR
 # =========================
-from datetime import date
-
 @app.route("/nutrition/calculator/<int:group_id>", methods=["GET", "POST"])
 @login_required
 def nutrition_calculator(group_id):
@@ -2464,7 +2526,6 @@ def nutrition_calculator(group_id):
     foods = FoodItem.query.all()
 
     if request.method == "POST":
-
         log = NutritionLog(
             user_id=current_user.id,
             group_id=group.id,
@@ -2475,54 +2536,39 @@ def nutrition_calculator(group_id):
             total_fat=0
         )
         db.session.add(log)
-        db.session.flush()  # 🔥 IMPORTANT
+        db.session.flush()
 
-        total_c = total_p = total_cb = total_f = 0
-
-        for food in foods:
-            qty = request.form.get(f"qty_{food.id}")
-
+        for f in foods:
+            qty = request.form.get(f"qty_{f.id}")
             if qty and float(qty) > 0:
                 qty = float(qty)
 
-                calories = food.calories * qty
-                protein = food.protein * qty
-                carbs = food.carbs * qty
-                fat = food.fat * qty
-
                 item = NutritionLogItem(
                     log_id=log.id,
-                    food_id=food.id,
+                    food_id=f.id,
                     quantity=qty,
-                    calories=calories,
-                    protein=protein,
-                    carbs=carbs,
-                    fat=fat
+                    calories=f.calories * qty,
+                    protein=f.protein * qty,
+                    carbs=f.carbs * qty,
+                    fat=f.fat * qty
                 )
+
+                log.total_calories += item.calories
+                log.total_protein += item.protein
+                log.total_carbs += item.carbs
+                log.total_fat += item.fat
 
                 db.session.add(item)
 
-                total_c += calories
-                total_p += protein
-                total_cb += carbs
-                total_f += fat
-
-        log.total_calories = total_c
-        log.total_protein = total_p
-        log.total_carbs = total_cb
-        log.total_fat = total_f
-
         db.session.commit()
-
-        flash("Nutrition saved and shared to group", "success")
+        flash("Nutrition saved & shared", "success")
         return redirect(url_for("nutrition_group_view", group_id=group.id))
 
     return render_template(
         "nutrition/nutrition_calculator.html",
-        group=group,
-        foods=foods
+        foods=foods,
+        group=group
     )
-
 
 
 # =========================
@@ -2535,7 +2581,176 @@ def nutrition_history():
         user_id=current_user.id
     ).order_by(NutritionLog.log_date.desc()).all()
 
-    return render_template("nutrition/nutrition_history.html", logs=logs)
+    return render_template(
+        "nutrition/nutrition_history.html",
+        logs=logs
+    )
+
+
+
+
+#payment
+
+@app.route("/payment/<int:availability_id>")
+@login_required
+def payment_page(availability_id):
+
+    availability = PreMatchAvailability.query.get_or_404(availability_id)
+
+    # Only AVAILABLE players
+    PreMatchResponse.query.filter_by(
+        availability_id=availability.id,
+        user_id=current_user.id,
+        status="available"
+    ).first_or_404()
+
+    paid = MatchPayment.query.filter_by(
+        availability_id=availability.id,
+        user_id=current_user.id,
+        payment_status="paid"
+    ).first()
+
+    if paid:
+        flash("Payment already completed", "info")
+        return redirect(url_for("dashboard_player"))
+
+    return render_template(
+        "payment/payment_page.html",
+        availability=availability
+    )
+
+@app.route("/payment/create-order/<int:availability_id>")
+@login_required
+def create_payment_order(availability_id):
+
+    availability = PreMatchAvailability.query.get_or_404(availability_id)
+
+    order = razorpay_client.order.create({
+        "amount": int(float(availability.amount) * 100),  # paise
+        "currency": "INR",
+        "payment_capture": 1
+    })
+
+    payment = MatchPayment(
+        availability_id=availability.id,
+        user_id=current_user.id,
+        amount=availability.amount,
+        payment_method="razorpay",
+        payment_status="pending",
+        razorpay_order_id=order["id"]
+    )
+
+    db.session.add(payment)
+    db.session.commit()
+
+    return jsonify({
+        "order_id": order["id"],
+        "key": os.getenv("RAZORPAY_KEY_ID"),
+        "amount": int(float(availability.amount) * 100)
+    })
+
+
+
+@app.route("/payment/success", methods=["POST"])
+@login_required
+def payment_success():
+    data = request.get_json()
+
+    payment = MatchPayment.query.filter_by(
+        razorpay_order_id=data["razorpay_order_id"]
+    ).first_or_404()
+
+    payment.razorpay_payment_id = data["razorpay_payment_id"]
+    payment.razorpay_signature = data["razorpay_signature"]
+    payment.payment_status = "paid"
+
+    db.session.commit()
+
+    return jsonify({"status": "ok"})
+
+
+@app.route("/payment/cash/<int:availability_id>")
+@login_required
+def cash_payment_request(availability_id):
+
+    availability = PreMatchAvailability.query.get_or_404(availability_id)
+
+    payment = MatchPayment(
+        availability_id=availability.id,
+        user_id=current_user.id,
+        amount=availability.amount,
+        payment_method="cash",
+        payment_status="cash_pending"
+    )
+
+    db.session.add(payment)
+    db.session.commit()
+
+    flash("Cash payment sent for coach approval", "info")
+    return redirect(url_for("dashboard_player"))
+
+@app.route("/payment/cash/approve/<int:payment_id>")
+@login_required
+def approve_cash(payment_id):
+
+    if current_user.role != "coach":
+        abort(403)
+
+    payment = MatchPayment.query.get_or_404(payment_id)
+    payment.payment_status = "paid"
+
+    db.session.commit()
+
+    flash("Cash payment approved", "success")
+    return redirect(url_for("payment_history_coach"))
+
+@app.route("/payment/history/coach")
+@login_required
+def payment_history_coach():
+
+    if current_user.role != "coach":
+        abort(403)
+
+    payments = MatchPayment.query\
+        .order_by(MatchPayment.created_at.desc())\
+        .all()
+
+    return render_template(
+        "payment/payment_history_coach.html",
+        payments=payments
+    )
+
+@app.route("/payment/history/player")
+@login_required
+def payment_history_player():
+
+    payments = MatchPayment.query.filter_by(
+        user_id=current_user.id
+    ).order_by(MatchPayment.created_at.desc()).all()
+
+    return render_template(
+        "payment/payment_history_player.html",
+        payments=payments
+    )
+
+
+
+
+def notify_payment_enabled(availability_id, amount):
+    available_players = PreMatchResponse.query.filter_by(
+        availability_id=availability_id,
+        status="available"
+    ).all()
+
+    for r in available_players:
+        n = Notification(
+            user_id=r.user_id,
+            message=f"💰 Match fee ₹{amount} enabled. Please complete payment.",
+            link=f"/payment/{availability_id}"
+        )
+        db.session.add(n)
+
+    db.session.commit()
 
 
 

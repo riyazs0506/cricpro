@@ -16,6 +16,7 @@ from .nutrition_group import NutritionGroup
 from .nutrition_log import NutritionLog
 from .nutrition_log_item import NutritionLogItem
 from .nutrition_group_member import NutritionGroupMember
+from .payment import MatchPayment
 
 
 __all__ = [
@@ -25,5 +26,5 @@ __all__ = [
     "ManualScore", "WagonWheel", "LiveBall",
     "PlayerStats", "BattingStats", "BowlingStats", "FieldingStats", "Attendance",
     "Notification", "Message","ChatGroup","ChatGroupMember","PreMatchAvailability","PreMatchResponse","FoodItem",
-    "NutritionGroup", "NutritionLog", "NutritionLogItem","NutritionGroupMember"
+    "NutritionGroup", "NutritionLog", "NutritionLogItem","NutritionGroupMember","MatchPayment"
 ]

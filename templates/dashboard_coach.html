@@ -5,75 +5,88 @@
 
 <div class="row">
 
-  <!-- LEFT -->
+  <!-- LEFT COLUMN -->
   <div class="col-md-4 mb-3">
 
+    <!-- QUICK ACTIONS -->
     <div class="card shadow-sm p-3 mb-3">
-      <h5>Quick Actions</h5>
+      <h5 class="mb-3">Quick Actions</h5>
 
-      <a href="{{ url_for('attendance') }}" class="btn btn-success w-100 mt-2">Mark Attendance</a>
-      <a href="{{ url_for('coach_create_match') }}" class="btn btn-primary w-100 mt-2">Create Live / Manual Match</a>
-      <a href="{{ url_for('manual_match_create') }}" class="btn btn-dark w-100 mt-2">Manual Match Only</a>
+      <a href="{{ url_for('attendance') }}" class="btn btn-success w-100 mb-2">Mark Attendance</a>
+      <a href="{{ url_for('coach_create_match') }}" class="btn btn-primary w-100 mb-2">Create Live / Manual Match</a>
+      <a href="{{ url_for('manual_match_create') }}" class="btn btn-dark w-100 mb-2">Manual Match Only</a>
 
-      <!-- PRE-MATCH AVAILABILITY -->
-      <a href="{{ url_for('pre_match_create') }}" class="btn btn-warning w-100 mt-2">
+      <a href="{{ url_for('pre_match_create') }}" class="btn btn-warning w-100 mb-2">
         Create Pre-Match Availability
       </a>
 
-      <a href="{{ url_for('match_list') }}" class="btn btn-secondary w-100 mt-2">All Matches</a>
-      <a href="{{ url_for('coach_player_list') }}" class="btn btn-secondary w-100 mt-2">
-                View Players
-            </a>
-      <a href="{{ url_for('chat_list') }}" class="btn btn-outline-primary w-100 mt-2">💬 Messages</a>
+      <a href="{{ url_for('match_list') }}" class="btn btn-secondary w-100 mb-2">All Matches</a>
+      <a href="{{ url_for('coach_player_list') }}" class="btn btn-secondary w-100 mb-2">View Players</a>
 
+      <a href="{{ url_for('chat_list') }}" class="btn btn-outline-primary w-100 mb-2">💬 Messages</a>
 
-      <a href="{{ url_for('nutrition_home') }}" class="btn btn-success w-100 mt-2">
-  🥗 Nutrition Tracker
-</a>
-
+      <a href="{{ url_for('nutrition_home') }}" class="btn btn-success w-100">
+        🥗 Nutrition Tracker
+      </a>
     </div>
 
+    <!-- MATCH PAYMENTS -->
+    <div class="card shadow-sm p-3 mb-3">
+      <h5 class="mb-2">💰 Match Payments</h5>
+
+      {% if latest_pre_match_session %}
+        <a href="{{ url_for('payment_history_coach') }}"
+           class="btn btn-outline-success w-100">
+          View Payment Status
+        </a>
+      {% else %}
+        <p class="text-muted small mb-0">No active payment sessions</p>
+      {% endif %}
+    </div>
+
+    <!-- ATTENDANCE SUMMARY -->
     <div class="card shadow-sm p-3">
       <h6>Today's Attendance</h6>
-      <p class="text-success fw-bold">Present: {{ attendance_present }}</p>
-      <p class="text-danger fw-bold">Absent: {{ attendance_absent }}</p>
+      <p class="text-success fw-bold mb-1">Present: {{ attendance_present }}</p>
+      <p class="text-danger fw-bold mb-0">Absent: {{ attendance_absent }}</p>
     </div>
 
   </div>
 
-  <!-- RIGHT -->
+  <!-- RIGHT COLUMN -->
   <div class="col-md-8">
 
-      <!-- PRE-MATCH AVAILABILITY (LATEST ONLY) -->
-      <div class="card shadow-sm p-3 mb-3">
-        <h5>Latest Pre-Match Availability</h5>
+    <!-- LATEST PRE-MATCH -->
+    <div class="card shadow-sm p-3 mb-3">
+      <h5>Latest Pre-Match Availability</h5>
 
-        {% if latest_pre_match_session %}
-          <p class="mb-1">
-            <strong>{{ latest_pre_match_session.title }}</strong><br>
-            <small>
-              {{ latest_pre_match_session.match_date }} |
-              {{ latest_pre_match_session.venue }}
-            </small>
-          </p>
+      {% if latest_pre_match_session %}
+        <p class="mb-1">
+          <strong>{{ latest_pre_match_session.title }}</strong><br>
+          <small>
+            {{ latest_pre_match_session.match_date }} |
+            {{ latest_pre_match_session.venue }}
+          </small>
+        </p>
 
-          <a href="{{ url_for('availability_summary',availability_id=latest_pre_match_session.id) }}"
-            class="btn btn-outline-primary btn-sm mt-2">
-            View Summary
-          </a>
+        <a href="{{ url_for('availability_summary', availability_id=latest_pre_match_session.id) }}"
+           class="btn btn-outline-primary btn-sm mt-2">
+          View Summary
+        </a>
 
-          <a href="{{ url_for('coach_pre_match_list') }}"
-            class="btn btn-link btn-sm mt-2">
-            View All Sessions →
-          </a>
-        {% else %}
-          <p class="text-muted">No pre-match availability created yet.</p>
-        {% endif %}
-      </div>
+        <a href="{{ url_for('coach_pre_match_list') }}"
+           class="btn btn-link btn-sm mt-2">
+          View All Sessions →
+        </a>
+      {% else %}
+        <p class="text-muted">No pre-match availability created yet.</p>
+      {% endif %}
+    </div>
 
     <!-- LIVE MATCHES -->
     <div class="card shadow-sm p-3 mb-3">
       <h5>Live Matches</h5>
+
       {% for m in live_matches %}
         <a href="{{ url_for('scoring_panel', match_id=m.id) }}"
            class="btn btn-outline-success btn-sm mb-1">
@@ -87,6 +100,7 @@
     <!-- MANUAL MATCHES -->
     <div class="card shadow-sm p-3 mb-3">
       <h5>Manual Matches</h5>
+
       {% for m in manual_matches %}
         <a href="{{ url_for('manual_scoring', match_id=m.id) }}"
            class="btn btn-outline-dark btn-sm mb-1">
@@ -97,7 +111,7 @@
       {% endfor %}
     </div>
 
-    <!-- PLAYER APPROVAL (RESTORED) -->
+    <!-- PLAYER APPROVAL -->
     <div class="card shadow-sm p-3 mb-3">
       <h5>Players Pending Approval</h5>
 

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+  <div class="card shadow-sm p-4">
+
+    <h4 class="fw-bold mb-3">💰 Match Fee Payment</h4>
+
+    <p><b>Match:</b> {{ availability.title }}</p>
+    <p><b>Date:</b> {{ availability.match_date }}</p>
+    <p><b>Venue:</b> {{ availability.venue }}</p>
+
+    <hr>
+
+    <h5 class="text-success mb-3">
+      Amount to Pay: ₹{{ availability.amount }}
+    </h5>
+
+    <!-- PAY ONLINE -->
+    <button id="rzp-pay-btn" class="btn btn-primary w-100 mb-3">
+      💳 Pay Online (UPI / Card / NetBanking)
+    </button>
+
+    <!-- QR PAYMENT -->
+    <div class="text-center mb-3">
+      <p class="fw-semibold mb-1">OR Scan QR</p>
+      <img src="{{ url_for('static', filename='qr/coach_qr.png') }}"
+           style="max-width:220px"
+           class="img-fluid border rounded">
+    </div>
+
+    <!-- CASH -->
+    <a href="{{ url_for('cash_payment_request', availability_id=availability.id) }}"
+       class="btn btn-warning w-100">
+      💵 Cash (Coach Approval Required)
+    </a>
+
+  </div>
+</div>
+
+<!-- Razorpay SDK -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+document.getElementById("pay-btn").onclick = function () {
+
+  fetch("{{ url_for('create_payment_order', availability_id=availability.id) }}")
+    .then(res => res.json())
+    .then(data => {
+
+      if (!data.order_id) {
+        alert("Unable to start payment. Try again.");
+        return;
+      }
+
+      var options = {
+        key: data.key,
+        amount: data.amount, // ❗ NO ×100 HERE
+        currency: "INR",
+        name: "CricPro",
+        description: "Match Fee Payment",
+        order_id: data.order_id,
+
+        prefill: {
+          name: "{{ current_user.username }}",
+          email: "{{ current_user.email or '' }}",
+          contact: "{{ current_user.phone or '' }}"
+        },
+
+        theme: {
+          color: "#2563eb"
+        },
+
+        handler: function (response) {
+
+          var form = document.createElement("form");
+          form.method = "POST";
+          form.action = "{{ url_for('payment_success') }}";
+
+          for (let key in response) {
+            let input = document.createElement("input");
+            input.type = "hidden";
+            input.name = key;
+            input.value = response[key];
+            form.appendChild(input);
+          }
+
+          document.body.appendChild(form);
+          form.submit();
+        }
+      };
+
+      var rzp = new Razorpay(options);
+
+      rzp.on("payment.failed", function (resp) {
+        alert("Payment failed: " + resp.error.description);
+      });
+
+      rzp.open();
+    })
+    .catch(() => {
+      alert("Unable to start payment. Try again.");
+    });
+};
+</script>
+
+{% endblock %}

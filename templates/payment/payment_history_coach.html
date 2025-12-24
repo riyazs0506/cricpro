@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+  <h4 class="fw-bold mb-3">💰 Match Payments (Coach)</h4>
+
+  <table class="table table-bordered">
+    <thead class="table-light">
+      <tr>
+        <th>Player ID</th>
+        <th>Amount</th>
+        <th>Method</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in payments %}
+      <tr>
+        <td>{{ p.user_id }}</td>
+        <td>₹{{ p.amount }}</td>
+        <td>{{ p.payment_method }}</td>
+        <td>
+          {% if p.payment_status == "paid" %}
+            <span class="badge bg-success">Paid</span>
+          {% elif p.payment_status == "cash_pending" %}
+            <span class="badge bg-warning">Cash Pending</span>
+          {% else %}
+            <span class="badge bg-secondary">{{ p.payment_status }}</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if p.payment_status == "cash_pending" %}
+            <a href="{{ url_for('approve_cash', payment_id=p.id) }}"
+               class="btn btn-success btn-sm">
+              Approve
+            </a>
+          {% else %}
+            —
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}
+  

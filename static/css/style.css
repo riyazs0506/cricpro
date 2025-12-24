@@ -291,38 +291,29 @@ a {
     background-color: #f5f7fb;
 }
 
-/* ===== FIX INPUT NOT CLICKABLE ISSUE ===== */
+/* ===============================
+   FIX NUTRITION INPUT OVERLAY
+=============================== */
+/* ===== FIX NUTRITION INPUT CLICK ISSUE ===== */
 
-.nutrition-input {
-  pointer-events: auto !important;
-  z-index: 10;
-  position: relative;
-}
-
-table, td, th {
-  pointer-events: auto !important;
-}
-
-.table-responsive {
-  overflow-x: auto;
-  pointer-events: auto !important;
-}
-
-/* ===== FIX INPUT CLICK ISSUE ===== */
+.nutrition-input,
 input,
 select,
 textarea,
 button {
-    pointer-events: auto !important;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 10;
 }
 
 .table-responsive,
+.table,
 .card,
 .container,
 form {
-    pointer-events: auto !important;
+  pointer-events: auto !important;
 }
 
 .table-responsive * {
-    pointer-events: auto !important;
+  pointer-events: auto !important;
 }

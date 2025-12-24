@@ -1,14 +1,15 @@
-<!-- templates/availability_summary.html -->
 {% extends "base.html" %}
 {% block content %}
 
-<h3>{{ availability.title }}</h3>
+<h3 class="fw-bold">{{ availability.title }}</h3>
 <p class="text-muted">
-  📅 {{ availability.match_date }} | 📍 {{ availability.venue }}
+  📅 {{ availability.match_date }} |
+  📍 {{ availability.venue }} |
+  💰 Fee ₹{{ availability.amount }}
 </p>
 
 <table class="table table-bordered mt-3">
-  <thead>
+  <thead class="table-light">
     <tr>
       <th>Member</th>
       <th>Status</th>
@@ -19,17 +20,38 @@
     <tr>
       <td>{{ r.username }}</td>
       <td>
-        {% if r.status == "available" %}✅{% elif r.status == "not_available" %}❌{% else %}⏳{% endif %}
-        {{ r.status }}
+        {% if r.status == "available" %}
+          ✅ Available
+        {% elif r.status == "not_available" %}
+          ❌ Not Available
+        {% else %}
+          ⏳ Later
+        {% endif %}
       </td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
 
-<a href="{{ url_for('availability_pdf', availability_id=availability.id) }}"
-   class="btn btn-outline-primary">
-  📄 Download PDF
-</a>
+<div class="mt-4 d-flex gap-2">
+
+  <a href="{{ url_for('availability_pdf', availability_id=availability.id) }}"
+     class="btn btn-outline-primary">
+    📄 Download PDF
+  </a>
+
+  {% if not availability.is_finalized %}
+  <form method="POST">
+    <button class="btn btn-success">
+      ✅ Finish & Enable Payment
+    </button>
+  </form>
+  {% else %}
+    <span class="badge bg-success p-2">
+      💰 Payment Enabled
+    </span>
+  {% endif %}
+
+</div>
 
 {% endblock %}

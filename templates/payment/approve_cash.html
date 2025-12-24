@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+  <div class="card shadow-sm p-4">
+
+    <h4 class="fw-bold mb-3">💵 Cash Payment Approval</h4>
+
+    <p><b>Player ID:</b> {{ payment.user_id }}</p>
+    <p><b>Match ID:</b> {{ payment.availability_id }}</p>
+    <p><b>Amount:</b> ₹{{ payment.amount }}</p>
+
+    <hr>
+
+    <a href="{{ url_for('approve_cash', payment_id=payment.id) }}"
+       class="btn btn-success w-100">
+      ✅ Approve Cash Payment
+    </a>
+
+  </div>
+</div>
+
+{% endblock %}
