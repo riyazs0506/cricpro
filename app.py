@@ -29,7 +29,9 @@ from models import (
     ManualScore, WagonWheel, LiveBall,
     PlayerStats, BattingStats, BowlingStats, FieldingStats,
     Attendance,
-    Notification, Message, ChatGroup, ChatGroupMember, PreMatchResponse, PreMatchAvailability,NutritionGroupMember,MatchPayment
+    Notification, Message, ChatGroup, ChatGroupMember, PreMatchResponse, 
+    PreMatchAvailability,NutritionGroupMember, NutritionGroup, NutritionLog, 
+    NutritionLogItem,FoodItem,MatchPayment
 )
 
 # -------------------- DRILL MAP --------------------
@@ -47,18 +49,6 @@ from forms import (
     MatchCreateForm, ManualMatchForm
 )
 
-#payment
-import razorpay
-
-razorpay_client = razorpay.Client(
-    auth=(
-        os.getenv("RAZORPAY_KEY_ID"),
-        os.getenv("RAZORPAY_KEY_SECRET")
-    )
-)
-
-
-
 # -------------------- PDF --------------------
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
@@ -66,11 +56,16 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 
 
+
 # -------------------- APP INIT --------------------
 app = Flask(__name__)
 app.config.from_object(DevelopmentConfig)
 
 app.config["SECRET_KEY"] = "THIS_IS_A_STRONG_SECRET_KEY_12345"
+
+
+from routes.payments import payments_bp
+app.register_blueprint(payments_bp)
 
 # -------------------- EXTENSIONS INIT --------------------
 db.init_app(app)
@@ -85,6 +80,7 @@ with app.app_context():
         db.create_all()
     except Exception as e:
         print("⚠️ Warning: create_all() failed:", e)
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -2309,7 +2305,7 @@ def availability_summary(availability_id):
                 db.session.add(Notification(
                     user_id=r.id,
                     message=f"💰 Match fee ₹{availability.amount} enabled. Please pay now.",
-                    link=url_for("payment_page", availability_id=availability.id)
+                    link=url_for("payments.payment_page", availability_id=availability.id)
                 ))
 
         db.session.commit()
@@ -2585,154 +2581,6 @@ def nutrition_history():
         "nutrition/nutrition_history.html",
         logs=logs
     )
-
-
-
-
-#payment
-
-@app.route("/payment/<int:availability_id>")
-@login_required
-def payment_page(availability_id):
-
-    availability = PreMatchAvailability.query.get_or_404(availability_id)
-
-    # Only AVAILABLE players
-    PreMatchResponse.query.filter_by(
-        availability_id=availability.id,
-        user_id=current_user.id,
-        status="available"
-    ).first_or_404()
-
-    paid = MatchPayment.query.filter_by(
-        availability_id=availability.id,
-        user_id=current_user.id,
-        payment_status="paid"
-    ).first()
-
-    if paid:
-        flash("Payment already completed", "info")
-        return redirect(url_for("dashboard_player"))
-
-    return render_template(
-        "payment/payment_page.html",
-        availability=availability
-    )
-
-@app.route("/payment/create-order/<int:availability_id>")
-@login_required
-def create_payment_order(availability_id):
-
-    availability = PreMatchAvailability.query.get_or_404(availability_id)
-
-    order = razorpay_client.order.create({
-        "amount": int(float(availability.amount) * 100),  # paise
-        "currency": "INR",
-        "payment_capture": 1
-    })
-
-    payment = MatchPayment(
-        availability_id=availability.id,
-        user_id=current_user.id,
-        amount=availability.amount,
-        payment_method="razorpay",
-        payment_status="pending",
-        razorpay_order_id=order["id"]
-    )
-
-    db.session.add(payment)
-    db.session.commit()
-
-    return jsonify({
-        "order_id": order["id"],
-        "key": os.getenv("RAZORPAY_KEY_ID"),
-        "amount": int(float(availability.amount) * 100)
-    })
-
-
-
-@app.route("/payment/success", methods=["POST"])
-@login_required
-def payment_success():
-    data = request.get_json()
-
-    payment = MatchPayment.query.filter_by(
-        razorpay_order_id=data["razorpay_order_id"]
-    ).first_or_404()
-
-    payment.razorpay_payment_id = data["razorpay_payment_id"]
-    payment.razorpay_signature = data["razorpay_signature"]
-    payment.payment_status = "paid"
-
-    db.session.commit()
-
-    return jsonify({"status": "ok"})
-
-
-@app.route("/payment/cash/<int:availability_id>")
-@login_required
-def cash_payment_request(availability_id):
-
-    availability = PreMatchAvailability.query.get_or_404(availability_id)
-
-    payment = MatchPayment(
-        availability_id=availability.id,
-        user_id=current_user.id,
-        amount=availability.amount,
-        payment_method="cash",
-        payment_status="cash_pending"
-    )
-
-    db.session.add(payment)
-    db.session.commit()
-
-    flash("Cash payment sent for coach approval", "info")
-    return redirect(url_for("dashboard_player"))
-
-@app.route("/payment/cash/approve/<int:payment_id>")
-@login_required
-def approve_cash(payment_id):
-
-    if current_user.role != "coach":
-        abort(403)
-
-    payment = MatchPayment.query.get_or_404(payment_id)
-    payment.payment_status = "paid"
-
-    db.session.commit()
-
-    flash("Cash payment approved", "success")
-    return redirect(url_for("payment_history_coach"))
-
-@app.route("/payment/history/coach")
-@login_required
-def payment_history_coach():
-
-    if current_user.role != "coach":
-        abort(403)
-
-    payments = MatchPayment.query\
-        .order_by(MatchPayment.created_at.desc())\
-        .all()
-
-    return render_template(
-        "payment/payment_history_coach.html",
-        payments=payments
-    )
-
-@app.route("/payment/history/player")
-@login_required
-def payment_history_player():
-
-    payments = MatchPayment.query.filter_by(
-        user_id=current_user.id
-    ).order_by(MatchPayment.created_at.desc()).all()
-
-    return render_template(
-        "payment/payment_history_player.html",
-        payments=payments
-    )
-
 
 
 

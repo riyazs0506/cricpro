@@ -8,11 +8,9 @@ class Config:
 
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DATABASE_URL",
-        "mysql+pymysql://root:oMjTTmqBjCxuBXiEGUmQyngfKnaekmVt@centerbeam.proxy.rlwy.net:58790/railway"
-       # "mysql+pymysql://root:123456@localhost/cricpro"
+       # "mysql+pymysql://root:oMjTTmqBjCxuBXiEGUmQyngfKnaekmVt@centerbeam.proxy.rlwy.net:58790/railway"
+        "mysql+pymysql://root:123456@localhost/cricpro"
     )
-
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
 class DevelopmentConfig(Config):
@@ -21,3 +19,4 @@ class DevelopmentConfig(Config):
 
 class ProductionConfig(Config):
     DEBUG = False
+    PAYMENT_SIMULATE = False

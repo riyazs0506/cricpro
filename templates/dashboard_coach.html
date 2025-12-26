@@ -35,8 +35,7 @@
       <h5 class="mb-2">💰 Match Payments</h5>
 
       {% if latest_pre_match_session %}
-        <a href="{{ url_for('payment_history_coach') }}"
-           class="btn btn-outline-success w-100">
+      <a href="{{ url_for('payments.payment_history_coach') }}">
           View Payment Status
         </a>
       {% else %}
