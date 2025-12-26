@@ -8,8 +8,8 @@ class Config:
 
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DATABASE_URL",
-       # "mysql+pymysql://root:oMjTTmqBjCxuBXiEGUmQyngfKnaekmVt@centerbeam.proxy.rlwy.net:58790/railway"
-        "mysql+pymysql://root:123456@localhost/cricpro"
+        "mysql+pymysql://root:oMjTTmqBjCxuBXiEGUmQyngfKnaekmVt@centerbeam.proxy.rlwy.net:58790/railway"
+       # "mysql+pymysql://root:123456@localhost/cricpro"
     )
 
 
